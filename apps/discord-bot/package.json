@@ -1,0 +1,11 @@
+{
+  "name": "discord-bot",
+  "type": "module",
+  "module": "index.ts",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}

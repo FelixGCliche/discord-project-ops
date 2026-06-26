@@ -16,8 +16,8 @@ that turns discussions into tracked work, without letting an AI act on external 
 - A **Cloudflare** account — Workers + Durable Objects (free tier; the SQLite-backed Durable
   Object used here is free-tier eligible).
 - A **Discord application** with a bot — you'll need its application ID, public key, and bot
-  token, and the bot needs *Send Messages in Threads*, *View Channel*, and *Read Message
-  History*. Use a dedicated application, separate from any other bot.
+  token, and the bot needs _Send Messages in Threads_, _View Channel_, and _Read Message
+  History_. Use a dedicated application, separate from any other bot.
 - An **OpenCode** setup with your model subscription, plus a host for the container.
 - A **GitHub** repository for the vault, and a token (or GitHub App) with `contents:write`
   and `pull_requests:write` on it.
@@ -48,8 +48,8 @@ Then, in order:
 1. **OpenCode server** — build and deploy the container.
 2. **Bot Worker** — configure `apps/bot/wrangler.jsonc` (IDs, OpenCode URL, models, vault
    repo, write mode) and its secrets, then `bun run --cwd apps/bot register` to register the
-   slash commands and `bun run --cwd apps/bot deploy` to ship. Set the Discord *Interactions
-   Endpoint URL* to `https://<your-worker>/interactions`.
+   slash commands and `bun run --cwd apps/bot deploy` to ship. Set the Discord _Interactions
+   Endpoint URL_ to `https://<your-worker>/interactions`.
 
 Do a dry run on a throwaway forum post — `/summarize` → approve → `/plan` → `/issue` — before
 trusting it unattended.
@@ -63,12 +63,12 @@ decomposes the plan into issues — pausing for explicit human approval before
 
 Four slash commands drive a three-stage pipeline:
 
-| Command | Where | What it does |
-| --- | --- | --- |
-| `/summarize` | in a forum thread | Reads the whole thread, proposes a **decision record** → on approval writes `summary/<thread_id>.md` |
-| `/plan` | thread, or `thread_id` elsewhere/DM | Turns the approved decision into an **implementation plan** → on approval writes `plan/<thread_id>.md` |
-| `/issue` | thread, or `thread_id` | Decomposes the plan into **Linear issues**, one Approve/Deny per issue |
-| `/decide` | in a forum thread | Runs all three in sequence; a denial halts the chain |
+| Command      | Where                               | What it does                                                                                           |
+| ------------ | ----------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `/summarize` | in a forum thread                   | Reads the whole thread, proposes a **decision record** → on approval writes `summary/<thread_id>.md`   |
+| `/plan`      | thread, or `thread_id` elsewhere/DM | Turns the approved decision into an **implementation plan** → on approval writes `plan/<thread_id>.md` |
+| `/issue`     | thread, or `thread_id`              | Decomposes the plan into **Linear issues**, one Approve/Deny per issue                                 |
+| `/decide`    | in a forum thread                   | Runs all three in sequence; a denial halts the chain                                                   |
 
 Each stage posts its proposal back to Discord with **Approve** / **Deny** buttons. Approving a
 note writes it to the vault; approving an issue creates it in Linear. Nothing is written
