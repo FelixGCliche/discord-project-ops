@@ -2,6 +2,14 @@
   "name": "discord-bot",
   "type": "module",
   "module": "index.ts",
+  "scripts": {
+    "check": "tsc --noEmit && oxlint && oxfmt",
+    "check:type": "tsc --noEmit",
+    "check:lint": "oxlint",
+    "check:format": "oxfmt --check",
+    "fix:lint": "oxlint --fix",
+    "fix:format": "oxfmt"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },
