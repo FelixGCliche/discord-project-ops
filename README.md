@@ -92,27 +92,21 @@ vault/         git submodule: the actual Obsidian markdown (its own repo)
 
 Two runtimes, divided by a hard boundary, plus the vault as a separate repo.
 
-```
-                 ┌───────────────────────────────────────────────┐
-   Discord  ───► │  Cloudflare Worker  (apps/bot)                 │
-  (commands,     │  • verifies the request signature              │
-   buttons)      │  • acknowledges within 3s                      │
-                 │  • routes to a per-thread Durable Object       │
-                 └───────────────────┬───────────────────────────┘
-                                     │ RPC
-                                     ▼
-                 ┌───────────────────────────────────────────────┐
-                 │  PipelineSession  (Durable Object)             │
-                 │  • runs a stage, then HIBERNATES until a click │
-                 │  • holds the in-flight stage JSON (handoff)    │
-                 │  • performs the deterministic write on approval│
-                 └───┬─────────────────────┬──────────────────┬──┘
-                     │ HTTPS (basic auth)   │ Linear SDK       │ GitHub API
-                     ▼                      ▼                  ▼
-        ┌────────────────────────┐   ┌─────────────┐   ┌──────────────────┐
-        │ OpenCode server        │   │  Linear     │   │  Vault (git repo)│
-        │ (apps/opencode, Docker)│   │  (issues)   │   │  summary/ plan/  │
-        │ tool-less agent        │   └─────────────┘   │  issue/  (.md)   │
-        │ text in → JSON out     │                     └──────────────────┘
-        └────────────────────────┘
+```mermaid
+flowchart TD
+    Discord["Discord<br/>commands, buttons"]
+
+    Worker["Cloudflare Worker · apps/bot<br/>• verifies the request signature<br/>• acknowledges within 3s<br/>• routes to a per-thread Durable Object"]
+
+    DO["PipelineSession · Durable Object<br/>• runs a stage, then hibernates until a click<br/>• holds the in-flight stage JSON (handoff)<br/>• performs the deterministic write on approval"]
+
+    OpenCode["OpenCode server<br/>apps/opencode · Docker<br/>tool-less agent · text in → JSON out"]
+    Linear["Linear<br/>issues"]
+    Vault["Vault · git repo<br/>summary/ · plan/ · issue/ · .md"]
+
+    Discord --> Worker
+    Worker -->|RPC| DO
+    DO -->|"HTTPS (basic auth)"| OpenCode
+    DO -->|Linear SDK| Linear
+    DO -->|GitHub API| Vault
 ```
