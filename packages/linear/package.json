@@ -1,5 +1,5 @@
 {
-  "name": "core",
+  "name": "linear",
   "type": "module",
   "module": "index.ts",
   "scripts": {
