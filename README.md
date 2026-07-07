@@ -76,7 +76,7 @@ until you say so.
 
 ## Repository layout
 
-```
+```txt
 apps/
   bot/         Cloudflare Worker: interactions, signature verify, PipelineSession
                Durable Object, OAuth callbacks, the deterministic writes
