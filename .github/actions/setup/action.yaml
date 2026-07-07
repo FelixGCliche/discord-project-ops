@@ -10,7 +10,3 @@ runs:
     - name: Install dependencies
       shell: bash
       run: bun install --frozen-lockfile
-
-    - name: Build
-      shell: bash
-      run: bun run build

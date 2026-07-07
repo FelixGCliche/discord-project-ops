@@ -16,8 +16,8 @@ that turns discussions into tracked work, without letting an AI act on external 
 - A **Cloudflare** account — Workers + Durable Objects (free tier; the SQLite-backed Durable
   Object used here is free-tier eligible).
 - A **Discord application** with a bot — you'll need its application ID, public key, and bot
-  token, and the bot needs *Send Messages in Threads*, *View Channel*, and *Read Message
-  History*. Use a dedicated application, separate from any other bot.
+  token, and the bot needs _Send Messages in Threads_, _View Channel_, and _Read Message
+  History_. Use a dedicated application, separate from any other bot.
 - An **OpenCode** setup with your model subscription, plus a host for the container.
 - A **GitHub** repository for the vault, and a token (or GitHub App) with `contents:write`
   and `pull_requests:write` on it.
@@ -48,8 +48,8 @@ Then, in order:
 1. **OpenCode server** — build and deploy the container.
 2. **Bot Worker** — configure `apps/bot/wrangler.jsonc` (IDs, OpenCode URL, models, vault
    repo, write mode) and its secrets, then `bun run --cwd apps/bot register` to register the
-   slash commands and `bun run --cwd apps/bot deploy` to ship. Set the Discord *Interactions
-   Endpoint URL* to `https://<your-worker>/interactions`.
+   slash commands and `bun run --cwd apps/bot deploy` to ship. Set the Discord _Interactions
+   Endpoint URL_ to `https://<your-worker>/interactions`.
 
 Do a dry run on a throwaway forum post — `/summarize` → approve → `/plan` → `/issue` — before
 trusting it unattended.
@@ -63,12 +63,12 @@ decomposes the plan into issues — pausing for explicit human approval before
 
 Four slash commands drive a three-stage pipeline:
 
-| Command | Where | What it does |
-| --- | --- | --- |
-| `/summarize` | in a forum thread | Reads the whole thread, proposes a **decision record** → on approval writes `summary/<thread_id>.md` |
-| `/plan` | thread, or `thread_id` elsewhere/DM | Turns the approved decision into an **implementation plan** → on approval writes `plan/<thread_id>.md` |
-| `/issue` | thread, or `thread_id` | Decomposes the plan into **Linear issues**, one Approve/Deny per issue |
-| `/decide` | in a forum thread | Runs all three in sequence; a denial halts the chain |
+| Command      | Where                               | What it does                                                                                           |
+| ------------ | ----------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `/summarize` | in a forum thread                   | Reads the whole thread, proposes a **decision record** → on approval writes `summary/<thread_id>.md`   |
+| `/plan`      | thread, or `thread_id` elsewhere/DM | Turns the approved decision into an **implementation plan** → on approval writes `plan/<thread_id>.md` |
+| `/issue`     | thread, or `thread_id`              | Decomposes the plan into **Linear issues**, one Approve/Deny per issue                                 |
+| `/decide`    | in a forum thread                   | Runs all three in sequence; a denial halts the chain                                                   |
 
 Each stage posts its proposal back to Discord with **Approve** / **Deny** buttons. Approving a
 note writes it to the vault; approving an issue creates it in Linear. Nothing is written
@@ -76,7 +76,7 @@ until you say so.
 
 ## Repository layout
 
-```
+```txt
 apps/
   bot/         Cloudflare Worker: interactions, signature verify, PipelineSession
                Durable Object, OAuth callbacks, the deterministic writes
@@ -92,27 +92,21 @@ vault/         git submodule: the actual Obsidian markdown (its own repo)
 
 Two runtimes, divided by a hard boundary, plus the vault as a separate repo.
 
-```
-                 ┌───────────────────────────────────────────────┐
-   Discord  ───► │  Cloudflare Worker  (apps/bot)                 │
-  (commands,     │  • verifies the request signature              │
-   buttons)      │  • acknowledges within 3s                      │
-                 │  • routes to a per-thread Durable Object       │
-                 └───────────────────┬───────────────────────────┘
-                                     │ RPC
-                                     ▼
-                 ┌───────────────────────────────────────────────┐
-                 │  PipelineSession  (Durable Object)             │
-                 │  • runs a stage, then HIBERNATES until a click │
-                 │  • holds the in-flight stage JSON (handoff)    │
-                 │  • performs the deterministic write on approval│
-                 └───┬─────────────────────┬──────────────────┬──┘
-                     │ HTTPS (basic auth)   │ Linear SDK       │ GitHub API
-                     ▼                      ▼                  ▼
-        ┌────────────────────────┐   ┌─────────────┐   ┌──────────────────┐
-        │ OpenCode server        │   │  Linear     │   │  Vault (git repo)│
-        │ (apps/opencode, Docker)│   │  (issues)   │   │  summary/ plan/  │
-        │ tool-less agent        │   └─────────────┘   │  issue/  (.md)   │
-        │ text in → JSON out     │                     └──────────────────┘
-        └────────────────────────┘
+```mermaid
+flowchart TD
+    Discord["Discord<br/>commands, buttons"]
+
+    Worker["Cloudflare Worker · apps/bot<br/>• verifies the request signature<br/>• acknowledges within 3s<br/>• routes to a per-thread Durable Object"]
+
+    DO["PipelineSession · Durable Object<br/>• runs a stage, then hibernates until a click<br/>• holds the in-flight stage JSON (handoff)<br/>• performs the deterministic write on approval"]
+
+    OpenCode["OpenCode server<br/>apps/opencode · Docker<br/>tool-less agent · text in → JSON out"]
+    Linear["Linear<br/>issues"]
+    Vault["Vault · git repo<br/>summary/ · plan/ · issue/ · .md"]
+
+    Discord --> Worker
+    Worker -->|RPC| DO
+    DO -->|"HTTPS (basic auth)"| OpenCode
+    DO -->|Linear SDK| Linear
+    DO -->|GitHub API| Vault
 ```
