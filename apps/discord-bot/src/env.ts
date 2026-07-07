@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 export const botEnvSchema = z.object({
-  botToken: z.string(),
+  DISCORD_BOT_TOKEN: z.string(),
 })
 
 export type BotEnv = z.infer<typeof botEnvSchema>
