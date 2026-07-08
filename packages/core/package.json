@@ -8,7 +8,8 @@
     "check:lint": "oxlint",
     "check:format": "oxfmt --check",
     "fix:lint": "oxlint --fix",
-    "fix:format": "oxfmt"
+    "fix:format": "oxfmt",
+    "test": "bun test --dots"
   },
   "devDependencies": {
     "@types/bun": "latest"

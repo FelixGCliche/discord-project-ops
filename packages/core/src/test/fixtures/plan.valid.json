@@ -1,0 +1,27 @@
+{
+  "post_id": "post_123",
+  "decision_ref": "decisions/post_123.md",
+  "summary": "Replace slot-based inventory with a weight-based system capped by character strength.",
+  "approach": "Add a `weight` field to the item table, a `carryCapacity` stat derived from strength, and rework the inventory UI to show a capacity bar instead of slots.",
+  "affected_areas": ["ItemDatabase", "InventoryUI", "CharacterStats"],
+  "workstreams": [
+    {
+      "name": "Data model",
+      "goal": "Every item has a weight value and capacity is derived correctly",
+      "steps": [
+        "Add weight column to item table",
+        "Backfill weights for existing items",
+        "Derive carryCapacity from strength stat"
+      ],
+      "risks": ["Backfilling ~400 existing items by hand is slow and error-prone"]
+    },
+    {
+      "name": "Inventory UI",
+      "goal": "Players can see current load vs capacity and get warned near the cap",
+      "steps": ["Replace slot grid with weight-based list view", "Add capacity bar with warning state near cap"],
+      "risks": []
+    }
+  ],
+  "dependencies": ["Inventory UI workstream depends on Data model workstream"],
+  "open_questions": ["Should mounts/pack animals get separate weight pools?"]
+}

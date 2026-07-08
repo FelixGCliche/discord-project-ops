@@ -1,0 +1,123 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`renderDecision matches snapshot 1`] = `
+"# Switch inventory to a weight-based carry system
+**Post:** post_123
+**Participants:** felix, asha
+
+## Decision
+We will replace the slot-based inventory with a weight-based system capped per character strength.
+
+## Context
+Slot-based inventory was blocking stacking of crafting materials and felt inconsistent with the survival tone of the game.
+
+## Options Considered
+### Keep slot-based, add stacking
+- **Pros:** Minimal rework
+- **Cons:** Still allows carrying unrealistic amounts of heavy gear
+
+### Weight-based with strength cap
+- **Pros:** Matches survival tone, encourages loadout decisions
+- **Cons:** Requires UI rework and rebalancing all item weights
+
+## Rationale
+Weight-based best supports the survival identity even though it costs more UI work up front.
+
+## Non-Goals
+- Encumbrance debuffs beyond a hard carry cap
+
+## Open Questions
+- Should mounts/pack animals get separate weight pools?
+"
+`;
+
+exports[`renderPlan matches snapshot 1`] = `
+"# Plan: post_123
+
+**Decision ref:** decisions/post_123.md
+
+## Summary
+Replace slot-based inventory with a weight-based system capped by character strength.
+
+## Approach
+Add a \`weight\` field to the item table, a \`carryCapacity\` stat derived from strength, and rework the inventory UI to show a capacity bar instead of slots.
+
+## Affected Areas
+- ItemDatabase
+- InventoryUI
+- CharacterStats
+
+## Workstreams
+### Data model
+**Goal:** Every item has a weight value and capacity is derived correctly
+
+**Steps:**
+1. Add weight column to item table
+2. Backfill weights for existing items
+3. Derive carryCapacity from strength stat
+
+**Risks:**
+- Backfilling ~400 existing items by hand is slow and error-prone
+
+### Inventory UI
+**Goal:** Players can see current load vs capacity and get warned near the cap
+
+**Steps:**
+1. Replace slot grid with weight-based list view
+2. Add capacity bar with warning state near cap
+
+**Risks:**
+_none_
+
+## Cross-Workstream Dependencies
+- Inventory UI workstream depends on Data model workstream
+
+## Open Questions
+- Should mounts/pack animals get separate weight pools?
+"
+`;
+
+exports[`renderIssue / renderIssues renderIssue matches snapshot for a single issue 1`] = `
+"### Add weight column to item table
+**Labels:** design, data
+**Team:** ENG
+**Depends on:** _none_
+
+Add a \`weight\` numeric column to the item table. Acceptance: every item row has a non-null weight. See plans/post_123.md."
+`;
+
+exports[`renderIssue / renderIssues renderIssues matches snapshot for the full proposed list 1`] = `
+"# Proposed Issues: post_123
+
+**Plan ref:** plans/post_123.md
+**Count:** 4
+
+### Add weight column to item table
+**Labels:** design, data
+**Team:** ENG
+**Depends on:** _none_
+
+Add a \`weight\` numeric column to the item table. Acceptance: every item row has a non-null weight. See plans/post_123.md.
+
+### Backfill weights for existing items
+**Labels:** data
+**Team:** _unset_
+**Depends on:** Add weight column to item table
+
+Backfill weight values for all existing items. Acceptance: no item has a null/zero weight in prod. See plans/post_123.md.
+
+### Derive carryCapacity from strength stat
+**Labels:** gameplay
+**Team:** _unset_
+**Depends on:** Add weight column to item table
+
+Compute carryCapacity from the character's strength stat. Acceptance: capacity updates live when strength changes. See plans/post_123.md.
+
+### Replace slot grid with weight-based list view
+**Labels:** ui
+**Team:** _unset_
+**Depends on:** Derive carryCapacity from strength stat
+
+Rework inventory UI from a slot grid to a weight-based list with a capacity bar. Acceptance: matches plan's UI workstream. See plans/post_123.md.
+"
+`;
