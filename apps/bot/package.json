@@ -11,7 +11,8 @@
     "fix:format": "oxfmt"
   },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "wrangler": "^4.108.0"
   },
   "peerDependencies": {
     "typescript": "^5"
