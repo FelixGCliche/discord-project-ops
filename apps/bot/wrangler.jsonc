@@ -4,7 +4,10 @@
   "compatibility_date": "2026-05-24",
   "main": "src/index.ts",
   "observability": {
-    "enabled": true,
+    "logs": {
+      "enabled": true,
+      "invocation_logs": true,
+    },
   },
   "compatibility_flags": ["nodejs_compat"],
 }
