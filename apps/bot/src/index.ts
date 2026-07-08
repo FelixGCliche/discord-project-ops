@@ -1,11 +1,5 @@
-// import { Client, Events, GatewayIntentBits } from 'discord.js'
-
-// const client = new Client({ intents: [GatewayIntentBits.Guilds] })
-
-// client.once(Events.ClientReady, (readyClient) => {
-//   console.log(`Ready! Logged in as ${readyClient.user.tag}`)
-// })
-
-// client.login()
-
-console.log('hello world')
+export default {
+  async fetch(): Promise<Response> {
+    return new Response('hello world')
+  },
+}
