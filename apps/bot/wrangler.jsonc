@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "portfolio-website",
+  "name": "discord-project-ops",
   "compatibility_date": "2026-05-24",
   "main": "src/index.ts",
   "observability": {
