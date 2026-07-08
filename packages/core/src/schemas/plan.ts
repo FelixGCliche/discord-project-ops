@@ -7,8 +7,6 @@ export const WorkstreamSchema = z.object({
   risks: z.array(z.string()).default([]),
 })
 
-export const EstimateOverallSchema = z.enum(['S', 'M', 'L', 'XL'])
-
 export const PlanSchema = z.object({
   post_id: z.string(),
   decision_ref: z.string(),
@@ -18,9 +16,7 @@ export const PlanSchema = z.object({
   workstreams: z.array(WorkstreamSchema).min(1),
   dependencies: z.array(z.string()).default([]),
   open_questions: z.array(z.string()).default([]),
-  estimate_overall: EstimateOverallSchema,
 })
 
 export type Workstream = z.infer<typeof WorkstreamSchema>
-export type EstimateOverall = z.infer<typeof EstimateOverallSchema>
 export type Plan = z.infer<typeof PlanSchema>

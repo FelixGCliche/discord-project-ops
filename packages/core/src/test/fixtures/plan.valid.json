@@ -23,6 +23,5 @@
     }
   ],
   "dependencies": ["Inventory UI workstream depends on Data model workstream"],
-  "open_questions": ["Should mounts/pack animals get separate weight pools?"],
-  "estimate_overall": "M"
+  "open_questions": ["Should mounts/pack animals get separate weight pools?"]
 }

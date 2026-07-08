@@ -1,7 +1,6 @@
 {
   "missingTitle": {
     "post_id": "post_123",
-    "status": "decided",
     "decision": "We will replace the slot-based inventory with a weight-based system.",
     "context": "Slot-based inventory was blocking stacking.",
     "options_considered": [],
@@ -13,7 +12,6 @@
   "wrongTypeParticipants": {
     "post_id": "post_123",
     "title": "Switch inventory to a weight-based carry system",
-    "status": "decided",
     "decision": "We will replace the slot-based inventory with a weight-based system.",
     "context": "Slot-based inventory was blocking stacking.",
     "options_considered": [],

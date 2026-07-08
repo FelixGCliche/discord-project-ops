@@ -46,11 +46,6 @@ describe('PlanSchema', () => {
     }
   })
 
-  test('rejects an invalid estimate_overall enum value', () => {
-    const result = PlanSchema.safeParse(planInvalid.badEstimateEnum)
-    expect(result.success).toBe(false)
-  })
-
   test('rejects a plan missing decision_ref', () => {
     const result = PlanSchema.safeParse(planInvalid.missingDecisionRef)
     expect(result.success).toBe(false)
