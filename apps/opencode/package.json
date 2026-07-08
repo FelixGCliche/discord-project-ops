@@ -11,6 +11,10 @@
     "fix:lint": "oxlint --fix",
     "fix:format": "oxfmt"
   },
+  "dependencies": {
+    "@opencode-ai/sdk": "^1.17.15",
+    "core": "workspace:*"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },
