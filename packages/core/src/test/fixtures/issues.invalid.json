@@ -1,0 +1,59 @@
+{
+  "titleTooLong": {
+    "post_id": "post_123",
+    "plan_ref": "plans/post_123.md",
+    "issues": [
+      {
+        "title": "This issue title is deliberately far too long to satisfy the seventy character limit set in the schema",
+        "description": "Doesn't matter, the title already fails.",
+        "labels": [],
+        "estimate": "1",
+        "depends_on": []
+      }
+    ]
+  },
+  "unknownDependsOn": {
+    "post_id": "post_123",
+    "plan_ref": "plans/post_123.md",
+    "issues": [
+      {
+        "title": "Add weight column to item table",
+        "description": "Add a weight column.",
+        "labels": [],
+        "estimate": "2",
+        "depends_on": ["Some issue that does not exist in this list"]
+      }
+    ]
+  },
+  "selfDependency": {
+    "post_id": "post_123",
+    "plan_ref": "plans/post_123.md",
+    "issues": [
+      {
+        "title": "Add weight column to item table",
+        "description": "Add a weight column.",
+        "labels": [],
+        "estimate": "2",
+        "depends_on": ["Add weight column to item table"]
+      }
+    ]
+  },
+  "badEstimateEnum": {
+    "post_id": "post_123",
+    "plan_ref": "plans/post_123.md",
+    "issues": [
+      {
+        "title": "Add weight column to item table",
+        "description": "Add a weight column.",
+        "labels": [],
+        "estimate": "13",
+        "depends_on": []
+      }
+    ]
+  },
+  "emptyIssuesArray": {
+    "post_id": "post_123",
+    "plan_ref": "plans/post_123.md",
+    "issues": []
+  }
+}

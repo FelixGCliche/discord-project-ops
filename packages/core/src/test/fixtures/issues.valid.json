@@ -1,0 +1,35 @@
+{
+  "post_id": "post_123",
+  "plan_ref": "plans/post_123.md",
+  "issues": [
+    {
+      "title": "Add weight column to item table",
+      "description": "Add a `weight` numeric column to the item table. Acceptance: every item row has a non-null weight. See plans/post_123.md.",
+      "labels": ["design", "data"],
+      "estimate": "2",
+      "depends_on": [],
+      "team": "ENG"
+    },
+    {
+      "title": "Backfill weights for existing items",
+      "description": "Backfill weight values for all existing items. Acceptance: no item has a null/zero weight in prod. See plans/post_123.md.",
+      "labels": ["data"],
+      "estimate": "3",
+      "depends_on": ["Add weight column to item table"]
+    },
+    {
+      "title": "Derive carryCapacity from strength stat",
+      "description": "Compute carryCapacity from the character's strength stat. Acceptance: capacity updates live when strength changes. See plans/post_123.md.",
+      "labels": ["gameplay"],
+      "estimate": "2",
+      "depends_on": ["Add weight column to item table"]
+    },
+    {
+      "title": "Replace slot grid with weight-based list view",
+      "description": "Rework inventory UI from a slot grid to a weight-based list with a capacity bar. Acceptance: matches plan's UI workstream. See plans/post_123.md.",
+      "labels": ["ui"],
+      "estimate": "5",
+      "depends_on": ["Derive carryCapacity from strength stat"]
+    }
+  ]
+}

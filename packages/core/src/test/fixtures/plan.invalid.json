@@ -1,0 +1,48 @@
+{
+  "emptyWorkstreams": {
+    "post_id": "post_123",
+    "decision_ref": "decisions/post_123.md",
+    "summary": "Replace slot-based inventory with a weight-based system.",
+    "approach": "Add weight field and rework UI.",
+    "affected_areas": [],
+    "workstreams": [],
+    "dependencies": [],
+    "open_questions": [],
+    "estimate_overall": "M"
+  },
+  "badEstimateEnum": {
+    "post_id": "post_123",
+    "decision_ref": "decisions/post_123.md",
+    "summary": "Replace slot-based inventory with a weight-based system.",
+    "approach": "Add weight field and rework UI.",
+    "affected_areas": [],
+    "workstreams": [
+      {
+        "name": "Data model",
+        "goal": "Weights exist",
+        "steps": ["Add weight column"],
+        "risks": []
+      }
+    ],
+    "dependencies": [],
+    "open_questions": [],
+    "estimate_overall": "medium"
+  },
+  "missingDecisionRef": {
+    "post_id": "post_123",
+    "summary": "Replace slot-based inventory with a weight-based system.",
+    "approach": "Add weight field and rework UI.",
+    "affected_areas": [],
+    "workstreams": [
+      {
+        "name": "Data model",
+        "goal": "Weights exist",
+        "steps": ["Add weight column"],
+        "risks": []
+      }
+    ],
+    "dependencies": [],
+    "open_questions": [],
+    "estimate_overall": "M"
+  }
+}

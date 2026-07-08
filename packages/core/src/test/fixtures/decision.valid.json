@@ -1,0 +1,22 @@
+{
+  "post_id": "post_123",
+  "title": "Switch inventory to a weight-based carry system",
+  "decision": "We will replace the slot-based inventory with a weight-based system capped per character strength.",
+  "context": "Slot-based inventory was blocking stacking of crafting materials and felt inconsistent with the survival tone of the game.",
+  "options_considered": [
+    {
+      "option": "Keep slot-based, add stacking",
+      "pros": "Minimal rework",
+      "cons": "Still allows carrying unrealistic amounts of heavy gear"
+    },
+    {
+      "option": "Weight-based with strength cap",
+      "pros": "Matches survival tone, encourages loadout decisions",
+      "cons": "Requires UI rework and rebalancing all item weights"
+    }
+  ],
+  "rationale": "Weight-based best supports the survival identity even though it costs more UI work up front.",
+  "non_goals": ["Encumbrance debuffs beyond a hard carry cap"],
+  "open_questions": ["Should mounts/pack animals get separate weight pools?"],
+  "participants": ["felix", "asha"]
+}
