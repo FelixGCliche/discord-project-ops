@@ -1,7 +1,7 @@
 {
   "name": "core",
   "type": "module",
-  "module": "index.ts",
+  "module": "src/index.ts",
   "scripts": {
     "check": "tsc --noEmit && oxlint && oxfmt",
     "check:type": "tsc --noEmit",

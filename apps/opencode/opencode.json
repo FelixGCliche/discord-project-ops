@@ -1,0 +1,13 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "agent": {
+    "pipeline": {
+      "description": "Tool-less pipeline agent. Text in, schema-validated JSON out. It must never reach Linear, the vault, or a shell — those are the bot's deterministic, human-gated steps.",
+      "mode": "primary"
+    },
+    "build": {},
+    "plan": {},
+    "general": {},
+    "explore": {}
+  }
+}

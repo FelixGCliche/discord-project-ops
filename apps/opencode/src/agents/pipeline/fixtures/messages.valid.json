@@ -1,0 +1,27 @@
+[
+  {
+    "author": "asha",
+    "timestamp": "2026-06-01T14:02:00Z",
+    "content": "Slot-based inventory is fighting us on crafting mats -- stacking rules keep needing special cases. Should we just move to a weight-based system?"
+  },
+  {
+    "author": "felix",
+    "timestamp": "2026-06-01T14:05:00Z",
+    "content": "Weight-based fits the survival tone better too. Downside is it's a bigger UI rework and we'd need to rebalance every item's weight."
+  },
+  {
+    "author": "asha",
+    "timestamp": "2026-06-01T14:11:00Z",
+    "content": "We could keep slot-based and just add stacking for crafting mats specifically -- less rework, but it still lets players carry unrealistic amounts of heavy gear."
+  },
+  {
+    "author": "felix",
+    "timestamp": "2026-06-01T14:20:00Z",
+    "content": "I'd rather pay the UI cost now than keep bolting stacking exceptions onto slots. Let's go weight-based, capped by a carryCapacity derived from strength."
+  },
+  {
+    "author": "asha",
+    "timestamp": "2026-06-01T14:22:00Z",
+    "content": "Agreed, weight-based with a strength-derived cap. Still open: do mounts/pack animals get their own separate weight pool, or share the player's?"
+  }
+]

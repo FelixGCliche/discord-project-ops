@@ -1,12 +1,7 @@
-import type { Decision } from '../schemas'
+import type { Decision } from './schema'
 
 const listOrNone = (items: string[]) => (items.length === 0 ? '_none_' : items.map((i) => `- ${i}`).join('\n'))
 
-/**
- * Deterministic JSON -> markdown for decisions/<post>.md.
- * No LLM involved: same input always produces the same bytes, which is
- * what makes this safe to snapshot-test and diff in git.
- */
 export function renderDecision(decision: Decision): string {
   const options =
     decision.options_considered.length === 0

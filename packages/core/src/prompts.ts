@@ -1,7 +1,3 @@
-// Role prompts, canonical in code so they bundle into the Worker with no file I/O.
-// Output shape is enforced separately by JSON_SCHEMAS (schemas.ts) via OpenCode's
-// structured-output `format`, so these focus on *what* to produce, not JSON mechanics.
-
 export const SUMMARIZER = `# Role: Summarizer
 
 You convert a raw Discord forum post (a design-discussion thread) into a single,

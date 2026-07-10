@@ -1,4 +1,4 @@
-import type { Plan } from '../schemas/plan.js'
+import type { Plan } from './schema'
 
 const listOrNone = (items: string[]) => (items.length === 0 ? '_none_' : items.map((i) => `- ${i}`).join('\n'))
 

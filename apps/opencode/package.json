@@ -1,10 +1,8 @@
 {
-  "name": "discord-project-ops",
-  "workspaces": [
-    "apps/**",
-    "packages/**"
-  ],
+  "name": "opencode",
+  "private": true,
   "type": "module",
+  "module": "src/entrypoint.ts",
   "scripts": {
     "check": "tsc --noEmit && oxlint && oxfmt",
     "check:type": "tsc --noEmit",
@@ -12,15 +10,17 @@
     "check:format": "oxfmt --check",
     "fix:lint": "oxlint --fix",
     "fix:format": "oxfmt",
-    "test:all": "bun test && bun -F opencode test:pipeline"
+    "test": "bun test --dots",
+    "test:pipeline": "OPENCODE_ISOLATION_LIVE=1 bun test --dots src/agents/pipeline/pipeline.live.test.ts",
+    "build": "docker compose -f apps/opencode/docker-compose.yml up --build"
   },
   "dependencies": {
-    "zod": "^4.4.3"
+    "@opencode-ai/sdk": "^1.17.15",
+    "core": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "latest",
-    "oxfmt": "^0.56.0",
-    "oxlint": "^1.71.0"
+    "opencode-ai": "^1.17.15"
   },
   "peerDependencies": {
     "typescript": "^5"
