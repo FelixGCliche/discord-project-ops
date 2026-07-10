@@ -9,14 +9,7 @@ export type TestServer = {
   close: () => void
 }
 
-export function resolveServerUrl(): string {
-  if (testEnv.OPENCODE_LIVE_SERVER_URL) return testEnv.OPENCODE_LIVE_SERVER_URL
-
-  const connectHost = testEnv.OPENCODE_SERVER_HOSTNAME === '0.0.0.0' ? 'localhost' : testEnv.OPENCODE_SERVER_HOSTNAME
-  return `http://${connectHost}:${testEnv.OPENCODE_SERVER_PORT}`
-}
-
-function ensureOpencodeBinaryOnPath(): void {
+export function ensureOpencodeBinaryOnPath(): void {
   const binDir = join(import.meta.dir, '..', '..', '..', 'node_modules', '.bin')
   const path = process.env.PATH ?? ''
   if (!path.split(delimiter).includes(binDir)) {
@@ -24,12 +17,14 @@ function ensureOpencodeBinaryOnPath(): void {
   }
 }
 
-function authHeaders(): Record<string, string> | undefined {
-  if (!testEnv.OPENCODE_SERVER_PASSWORD) return undefined
-  const credentials = Buffer.from(`${testEnv.OPENCODE_SERVER_USERNAME}:${testEnv.OPENCODE_SERVER_PASSWORD}`).toString(
-    'base64'
-  )
+export function buildAuthHeaders(username: string, password: string | undefined): Record<string, string> | undefined {
+  if (!password) return undefined
+  const credentials = Buffer.from(`${username}:${password}`).toString('base64')
   return { Authorization: `Basic ${credentials}` }
+}
+
+function authHeaders(): Record<string, string> | undefined {
+  return buildAuthHeaders(testEnv.OPENCODE_SERVER_USERNAME, testEnv.OPENCODE_SERVER_PASSWORD)
 }
 
 async function startEphemeralServer(): Promise<TestServer> {
@@ -38,8 +33,18 @@ async function startEphemeralServer(): Promise<TestServer> {
   const hostname = testEnv.OPENCODE_SERVER_HOSTNAME === '0.0.0.0' ? '127.0.0.1' : testEnv.OPENCODE_SERVER_HOSTNAME
   const server = await createOpencodeServer({
     hostname,
-    port: testEnv.OPENCODE_SERVER_PORT,
+    // 0 asks the OS for a free port. Ephemeral test servers never need a fixed
+    // port -- callers always discover the real one from the returned url -- and
+    // a fixed port (e.g. inherited from apps/opencode/.env's OPENCODE_SERVER_PORT,
+    // which Bun auto-loads into every test run) would collide with a real
+    // opencode instance already listening on it (docker compose, `opencode serve`).
+    port: 0,
     config: buildConfig(),
+  }).catch((cause) => {
+    throw new Error(
+      'Failed to start the ephemeral opencode test server. If this is not a port conflict, check that the opencode binary is installed and OPENCODE_API_KEY is set.',
+      { cause }
+    )
   })
 
   return {
