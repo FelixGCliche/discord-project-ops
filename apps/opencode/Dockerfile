@@ -2,8 +2,15 @@ FROM oven/bun:1-slim AS base
 
 ARG OPENCODE_VERSION=latest
 
+# Global installs default to $HOME/.bun (i.e. /root/.bun, since this runs
+# before USER opencode below). /root is 700 root:root, so the non-root
+# opencode user can't traverse into it to follow the /usr/local/bin/opencode
+# symlink -- cross-spawn's PATH lookup then reports ENOENT instead of EACCES.
+# Installing under /usr/local instead keeps the real files world-traversable.
+ENV BUN_INSTALL=/usr/local
+
 RUN apt-get update -qq \
-    && apt-get install -y --no-install-recommends ca-certificates \
+    && apt-get install -y --no-install-recommends ca-certificates wget \
     && rm -rf /var/lib/apt/lists/* \
     && bun install -g opencode-ai@${OPENCODE_VERSION}
 
@@ -40,9 +47,6 @@ ENV OPENCODE_SERVER_PORT=4096
 ENV OPENCODE_SERVER_HOSTNAME=0.0.0.0
 EXPOSE 4096
 
-# VERIFY: confirm `opencode serve` exposes GET /global/health (used by
-# the compose healthcheck) on your pinned version -- seen in current
-# docs/examples but worth a quick curl before trusting it in CI.
 HEALTHCHECK --interval=10s --timeout=3s --start-period=10s --retries=5 \
     CMD ["sh", "-c", "wget -qO- http://127.0.0.1:${OPENCODE_SERVER_PORT}/global/health || exit 1"]
 

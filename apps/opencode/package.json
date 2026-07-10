@@ -9,14 +9,18 @@
     "check:lint": "oxlint",
     "check:format": "oxfmt --check",
     "fix:lint": "oxlint --fix",
-    "fix:format": "oxfmt"
+    "fix:format": "oxfmt",
+    "test": "bun test --dots",
+    "test:live": "OPENCODE_ISOLATION_LIVE=1 bun test --dots test/pipeline.live.test.ts",
+    "build": "docker compose -f apps/opencode/docker-compose.yml up --build"
   },
   "dependencies": {
     "@opencode-ai/sdk": "^1.17.15",
     "core": "workspace:*"
   },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "opencode-ai": "^1.17.15"
   },
   "peerDependencies": {
     "typescript": "^5"
