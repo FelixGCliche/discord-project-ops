@@ -7,6 +7,7 @@ services:
       - '4096:4096'
     environment:
       OPENCODE_API_KEY: '${OPENCODE_API_KEY:?set this in apps/opencode/.env}'
+      OPENCODE_SERVER_PASSWORD: '${OPENCODE_SERVER_PASSWORD:?set this in apps/opencode/.env}'
     env_file:
       - .env
     restart: unless-stopped

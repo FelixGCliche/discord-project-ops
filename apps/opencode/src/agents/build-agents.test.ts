@@ -1,11 +1,12 @@
 import { describe, expect, test } from 'bun:test'
+import { PROMPTS } from 'core/src/prompts.ts'
 import { agentsSchema, PERMISSION, TOOLS } from './agent-config-schema.ts'
 import { buildAgents, MODEL, STAGE_AGENTS } from './build-agents.ts'
 
-const STAGE_LABELS: Record<string, string> = {
-  summarizer: 'Stage 1',
-  planner: 'Stage 2',
-  'issue-generator': 'Stage 3',
+const EXPECTED_PROMPTS: Record<string, string> = {
+  summarizer: PROMPTS.summarize,
+  planner: PROMPTS.plan,
+  'issue-generator': PROMPTS.issue,
 }
 
 const STAGE_NAMES = Object.keys(STAGE_AGENTS)
@@ -27,9 +28,10 @@ describe('buildAgents()', () => {
   test.each(STAGE_NAMES)('%s has the correct description', (name) => {
     const result = buildAgents()
     const agent = result[name]!
+    const stageNumber = STAGE_NAMES.indexOf(name) + 1
     expect(agent).toBeDefined()
     expect(agent.description).toBeString()
-    expect(agent.description).toInclude(STAGE_LABELS[name]!)
+    expect(agent.description).toInclude(`Stage ${stageNumber}`)
   })
 
   test.each(STAGE_NAMES)('%s has correct model, temperature, and mode', (name) => {
@@ -53,6 +55,6 @@ describe('buildAgents()', () => {
     const result = buildAgents()
     const agent = result[name]!
     expect(agent).toBeDefined()
-    expect(agent.prompt).toBe(STAGE_AGENTS[name]!.prompt)
+    expect(agent.prompt).toBe(EXPECTED_PROMPTS[name])
   })
 })

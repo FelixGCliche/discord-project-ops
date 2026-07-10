@@ -14,8 +14,6 @@ export const IssuesSchema = z
     plan_ref: z.string().min(1),
     issues: z.array(IssueSchema).min(1),
   })
-  // Hard rule #3 from the role prompt: depends_on must reference an
-  // exact `title` present elsewhere in this same list.
   .superRefine((doc, ctx) => {
     const titles = new Set(doc.issues.map((i) => i.title))
     doc.issues.forEach((issue, issueIndex) => {

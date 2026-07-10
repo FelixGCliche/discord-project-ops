@@ -6,6 +6,8 @@ const testEnvSchema = z.object({
   OPENCODE_API_KEY: opencodeEnvSchema.shape.OPENCODE_API_KEY.optional(),
   OPENCODE_SERVER_HOSTNAME: opencodeEnvSchema.shape.OPENCODE_SERVER_HOSTNAME,
   OPENCODE_SERVER_PORT: opencodeEnvSchema.shape.OPENCODE_SERVER_PORT,
+  OPENCODE_SERVER_PASSWORD: opencodeEnvSchema.shape.OPENCODE_SERVER_PASSWORD.optional(),
+  OPENCODE_SERVER_USERNAME: z.string().min(1).default('opencode'),
   OPENCODE_LIVE_SERVER_URL: z.string().optional(),
   OPENCODE_ISOLATION_LIVE: z.literal('1').optional(),
 })

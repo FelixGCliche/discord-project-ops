@@ -16,10 +16,6 @@ export function resolveServerUrl(): string {
   return `http://${connectHost}:${testEnv.OPENCODE_SERVER_PORT}`
 }
 
-// createOpencodeServer spawns the `opencode` binary via PATH lookup. CI (and
-// a plain `bun test` outside a package.json script) doesn't put this
-// package's node_modules/.bin on PATH the way `bun run` does, so the
-// opencode-ai devDependency installed there would otherwise go unfound.
 function ensureOpencodeBinaryOnPath(): void {
   const binDir = join(import.meta.dir, '..', '..', '..', 'node_modules', '.bin')
   const path = process.env.PATH ?? ''
@@ -28,11 +24,14 @@ function ensureOpencodeBinaryOnPath(): void {
   }
 }
 
-// No live server URL means there's nothing already listening to test
-// against, so spin up an ephemeral one from the same config entrypoint.ts
-// builds in production. Config wiring can be asserted this way with no real
-// OPENCODE_API_KEY -- the pipeline agents' prompt/permission/tools are baked
-// into the config passed to the server, not fetched from a live provider.
+function authHeaders(): Record<string, string> | undefined {
+  if (!testEnv.OPENCODE_SERVER_PASSWORD) return undefined
+  const credentials = Buffer.from(`${testEnv.OPENCODE_SERVER_USERNAME}:${testEnv.OPENCODE_SERVER_PASSWORD}`).toString(
+    'base64'
+  )
+  return { Authorization: `Basic ${credentials}` }
+}
+
 async function startEphemeralServer(): Promise<TestServer> {
   ensureOpencodeBinaryOnPath()
 
@@ -43,13 +42,21 @@ async function startEphemeralServer(): Promise<TestServer> {
     config: buildConfig(),
   })
 
-  return { url: server.url, client: createOpencodeClient({ baseUrl: server.url }), close: server.close }
+  return {
+    url: server.url,
+    client: createOpencodeClient({ baseUrl: server.url, headers: authHeaders() }),
+    close: server.close,
+  }
 }
 
 export function connectTestServer(): Promise<TestServer> {
   if (testEnv.OPENCODE_LIVE_SERVER_URL) {
     const url = testEnv.OPENCODE_LIVE_SERVER_URL
-    return Promise.resolve({ url, client: createOpencodeClient({ baseUrl: url }), close: () => {} })
+    return Promise.resolve({
+      url,
+      client: createOpencodeClient({ baseUrl: url, headers: authHeaders() }),
+      close: () => {},
+    })
   }
 
   return startEphemeralServer()

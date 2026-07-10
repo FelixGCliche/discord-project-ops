@@ -1,11 +1,3 @@
-// apps/opencode/src/entrypoint.ts
-//
-// Replaces a shell entrypoint. Starts the opencode server in-process via the
-// SDK instead of shelling out to `opencode serve` from bash: createOpencodeServer
-// still spawns the `opencode` binary under the hood, but it hands the full
-// config through as JSON over an env var, so there's no shell scripting or
-// intermediate config file needed to wire the pipeline agents in.
-
 import { createOpencodeServer } from '@opencode-ai/sdk'
 import { parseEnv } from 'core/src/env.ts'
 import { opencodeEnvSchema } from './env.ts'

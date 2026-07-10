@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { agentConfigSchema, agentsSchema, PERMISSION, TOOLS, type AgentConfig } from './agent-config-schema.ts'
+import { expectAllValuesToBe } from './test-utils.ts'
 
 describe('agentConfigSchema', () => {
   test('parses empty object (all fields are optional)', () => {
@@ -118,9 +119,7 @@ describe('PERMISSION constant', () => {
   })
 
   test('all values are deny', () => {
-    for (const value of Object.values(PERMISSION)) {
-      expect(value).toBe('deny')
-    }
+    expectAllValuesToBe(PERMISSION, 'deny')
   })
 })
 
@@ -143,8 +142,6 @@ describe('TOOLS constant', () => {
   })
 
   test('all values are false', () => {
-    for (const value of Object.values(TOOLS)) {
-      expect(value).toBe(false)
-    }
+    expectAllValuesToBe(TOOLS, false)
   })
 })

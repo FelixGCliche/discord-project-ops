@@ -3,9 +3,6 @@ import type { AgentConfig as SdkAgentConfig } from '@opencode-ai/sdk'
 
 const permissionValueSchema = z.enum(['ask', 'allow', 'deny'])
 
-// Typing the schema itself as z.ZodType<SdkAgentConfig> makes the schema
-// declaration fail to typecheck (with a precise property-level error) if
-// @opencode-ai/sdk changes AgentConfig in a way this shape no longer satisfies.
 export const agentConfigSchema: z.ZodType<SdkAgentConfig> = z.object({
   description: z.string().optional(),
   mode: z.enum(['subagent', 'primary', 'all']).optional(),

@@ -1,51 +1,61 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
-import { buildConfig } from './build-config.ts'
+import type { AgentConfig } from '@opencode-ai/sdk'
+import { PROMPTS } from 'core/src/prompts.ts'
+import staticConfig from '../../opencode.json' with { type: 'json' }
+import { buildConfig, parseStaticAgents } from './build-config.ts'
 import { PERMISSION, TOOLS } from './agent-config-schema.ts'
-import { MODEL, STAGE_AGENTS as PIPELINE_STAGE_AGENTS } from './build-agents.ts'
 import { connectTestServer, type TestServer } from './pipeline/server.ts'
+import { expectAllValuesToBe } from './test-utils.ts'
 
-const STAGE_AGENTS: ReadonlyArray<readonly [name: string, prompt: string]> = Object.entries(PIPELINE_STAGE_AGENTS).map(
-  ([name, stage]) => [name, stage.prompt] as const
-)
+const STAGE_AGENTS: ReadonlyArray<readonly [name: string, prompt: string]> = [
+  ['summarizer', PROMPTS.summarize],
+  ['planner', PROMPTS.plan],
+  ['issue-generator', PROMPTS.issue],
+]
+
+const NATIVE_AGENTS = Object.keys(staticConfig.agent).filter((name) => name !== 'pipeline')
 
 describe('opencode server: pipeline agent wiring', () => {
   let server: TestServer
+  let agents: Record<string, AgentConfig | undefined> | undefined
 
   beforeAll(async () => {
     server = await connectTestServer()
+    const config = await server.client.config.get()
+    agents = config.data?.agent
   })
 
   afterAll(() => {
     server.close()
   })
 
-  test.each(STAGE_AGENTS)('%s is registered with its exact role prompt', async (name, prompt) => {
-    const config = await server.client.config.get()
-    const agent = config.data?.agent?.[name]
+  test.each(STAGE_AGENTS)('%s is registered with its exact role prompt', (name, prompt) => {
+    const agent = agents?.[name]
 
     expect(agent).toBeDefined()
     expect(agent?.prompt).toBe(prompt)
     expect(agent?.mode).toBe('subagent')
   })
 
-  test.each(STAGE_AGENTS)('%s denies every permission', async (name) => {
-    const config = await server.client.config.get()
-    const agent = config.data?.agent?.[name]
+  test.each(STAGE_AGENTS)('%s denies every permission', (name) => {
+    const agent = agents?.[name]
 
     expect(agent?.permission).toBeDefined()
-    for (const value of Object.values(agent?.permission ?? {})) {
-      expect(value).toBe('deny')
-    }
+    expectAllValuesToBe(agent?.permission, 'deny')
   })
 
-  test.each(STAGE_AGENTS)('%s has every tool disabled', async (name) => {
-    const config = await server.client.config.get()
-    const agent = config.data?.agent?.[name]
+  test.each(STAGE_AGENTS)('%s has every tool disabled', (name) => {
+    const agent = agents?.[name]
 
     expect(agent?.tools).toBeDefined()
-    for (const value of Object.values(agent?.tools ?? {})) {
-      expect(value).toBe(false)
-    }
+    expectAllValuesToBe(agent?.tools, false)
+  })
+
+  test.each(NATIVE_AGENTS)('native agent %s denies every permission', (name) => {
+    const agent = agents?.[name]
+
+    expect(agent?.permission).toBeDefined()
+    expectAllValuesToBe(agent?.permission, 'deny')
   })
 })
 
@@ -64,41 +74,17 @@ describe('buildConfig()', () => {
     expect(config.agent).toHaveProperty('issue-generator')
   })
 
-  test.each(STAGE_AGENTS)('%s has correct model, temperature, and mode', (name) => {
-    const config = buildConfig()
-    const agent = config.agent?.[name]
-    expect(agent).toBeDefined()
-    expect(agent?.model).toBe(MODEL)
-    expect(agent?.temperature).toBe(0)
-    expect(agent?.mode).toBe('subagent')
-  })
-
-  test.each(STAGE_AGENTS)('%s has correct role prompt', (name, prompt) => {
-    const config = buildConfig()
-    const agent = config.agent?.[name]
-    expect(agent).toBeDefined()
-    expect(agent?.prompt).toBe(prompt)
-  })
-
-  test('pipeline agents have all permissions denied', () => {
-    const config = buildConfig()
-    for (const [name] of STAGE_AGENTS) {
-      expect(config.agent?.[name]?.permission).toEqual(PERMISSION)
-    }
-  })
-
-  test('pipeline agents have all tools disabled', () => {
-    const config = buildConfig()
-    for (const [name] of STAGE_AGENTS) {
-      expect(config.agent?.[name]?.tools).toEqual(TOOLS)
-    }
-  })
-
   test('static agent inherits deny-all baseline', () => {
     const config = buildConfig()
     const pipeline = config.agent?.pipeline
     expect(pipeline).toBeDefined()
     expect(pipeline?.permission).toEqual(PERMISSION)
     expect(pipeline?.tools).toEqual(TOOLS)
+  })
+
+  test('parseStaticAgents throws a helpful error for an invalid agent config', () => {
+    expect(() => parseStaticAgents({ pipeline: { mode: 'not-a-real-mode' } })).toThrow(
+      /opencode\.json has an invalid agent config/
+    )
   })
 })
