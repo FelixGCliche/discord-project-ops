@@ -1,4 +1,4 @@
-// apps/opencode/entrypoint.ts
+// apps/opencode/src/entrypoint.ts
 //
 // Replaces a shell entrypoint. Starts the opencode server in-process via the
 // SDK instead of shelling out to `opencode serve` from bash: createOpencodeServer
@@ -9,7 +9,7 @@
 import { createOpencodeServer } from '@opencode-ai/sdk'
 import { parseEnv } from 'core/src/env.ts'
 import { opencodeEnvSchema } from './env.ts'
-import { buildConfig } from './build-agents.ts'
+import { buildConfig } from './agents/build-config.ts'
 
 const env = parseEnv(opencodeEnvSchema, process.env)
 

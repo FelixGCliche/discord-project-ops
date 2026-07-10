@@ -2,7 +2,7 @@
   "name": "opencode",
   "private": true,
   "type": "module",
-  "module": "index.ts",
+  "module": "src/entrypoint.ts",
   "scripts": {
     "check": "tsc --noEmit && oxlint && oxfmt",
     "check:type": "tsc --noEmit",
@@ -11,7 +11,7 @@
     "fix:lint": "oxlint --fix",
     "fix:format": "oxfmt",
     "test": "bun test --dots",
-    "test:live": "OPENCODE_ISOLATION_LIVE=1 bun test --dots test/pipeline.live.test.ts",
+    "test:pipeline": "OPENCODE_ISOLATION_LIVE=1 bun test --dots src/agents/pipeline/pipeline.live.test.ts",
     "build": "docker compose -f apps/opencode/docker-compose.yml up --build"
   },
   "dependencies": {

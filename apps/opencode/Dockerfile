@@ -55,4 +55,4 @@ HEALTHCHECK --interval=10s --timeout=3s --start-period=10s --retries=5 \
 # above, but the config (including the three pipeline agents built from
 # core/src/prompts.ts) is assembled in TypeScript and handed through in
 # memory instead of via a generated config file.
-ENTRYPOINT ["bun", "run", "entrypoint.ts"]
+ENTRYPOINT ["bun", "run", "src/entrypoint.ts"]

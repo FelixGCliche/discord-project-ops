@@ -1,6 +1,6 @@
 import { delimiter, join } from 'node:path'
 import { createOpencodeClient, createOpencodeServer } from '@opencode-ai/sdk'
-import { buildConfig } from '../../build-agents.ts'
+import { buildConfig } from '../build-config.ts'
 import { testEnv } from './env.ts'
 
 export type TestServer = {
@@ -21,7 +21,7 @@ export function resolveServerUrl(): string {
 // package's node_modules/.bin on PATH the way `bun run` does, so the
 // opencode-ai devDependency installed there would otherwise go unfound.
 function ensureOpencodeBinaryOnPath(): void {
-  const binDir = join(import.meta.dir, '..', '..', 'node_modules', '.bin')
+  const binDir = join(import.meta.dir, '..', '..', '..', 'node_modules', '.bin')
   const path = process.env.PATH ?? ''
   if (!path.split(delimiter).includes(binDir)) {
     process.env.PATH = [binDir, path].filter(Boolean).join(delimiter)

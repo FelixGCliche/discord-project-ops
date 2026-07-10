@@ -1,11 +1,11 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import { prettifyError } from 'zod'
-import { DecisionSchema, IssuesSchema, JSON_SCHEMAS, PlanSchema } from 'core/src/schemas/index.ts'
-import decisionFixture from 'core/src/test/fixtures/decision.valid.json'
-import messagesFixture from 'core/src/test/fixtures/messages.valid.json'
-import planFixture from 'core/src/test/fixtures/plan.valid.json'
-import { shouldRunLive } from './support/env.ts'
-import { connectTestServer, type TestServer } from './support/server.ts'
+import { DecisionSchema, IssuesSchema, JSON_SCHEMAS, PlanSchema } from 'core/src/index.ts'
+import decisionFixture from 'core/src/decision/fixtures/decision.valid.json'
+import messagesFixture from './fixtures/messages.valid.json'
+import planFixture from 'core/src/plan/fixtures/plan.valid.json'
+import { shouldRunLive } from './env.ts'
+import { connectTestServer, type TestServer } from './server.ts'
 
 const VAULT_CONTEXT =
   'No GDD note exists yet for inventory carry rules. Closest related note: "Character Stats" ' +

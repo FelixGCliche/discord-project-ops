@@ -1,0 +1,32 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`renderDecision matches snapshot 1`] = `
+"# Switch inventory to a weight-based carry system
+**Post:** post_123
+**Participants:** felix, asha
+
+## Decision
+We will replace the slot-based inventory with a weight-based system capped per character strength.
+
+## Context
+Slot-based inventory was blocking stacking of crafting materials and felt inconsistent with the survival tone of the game.
+
+## Options Considered
+### Keep slot-based, add stacking
+- **Pros:** Minimal rework
+- **Cons:** Still allows carrying unrealistic amounts of heavy gear
+
+### Weight-based with strength cap
+- **Pros:** Matches survival tone, encourages loadout decisions
+- **Cons:** Requires UI rework and rebalancing all item weights
+
+## Rationale
+Weight-based best supports the survival identity even though it costs more UI work up front.
+
+## Non-Goals
+- Encumbrance debuffs beyond a hard carry cap
+
+## Open Questions
+- Should mounts/pack animals get separate weight pools?
+"
+`;

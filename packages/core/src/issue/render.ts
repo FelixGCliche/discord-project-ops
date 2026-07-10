@@ -1,4 +1,4 @@
-import type { Issue, Issues } from '../schemas'
+import type { Issue, Issues } from './schema'
 
 export function renderIssue(issue: Issue): string {
   return `### ${issue.title}
