@@ -10,15 +10,24 @@ RUN apt-get update -qq \
 RUN useradd --create-home --uid 10001 opencode
 WORKDIR /home/opencode/app
 
-# Full monorepo context (see the root .dockerignore for exclusions). This app
-# depends on core (packages/core, for the canonical role prompts) as a real
-# bun workspace dependency now, so a surgical COPY of individual files can't
-# satisfy `bun install --frozen-lockfile`'s workspace resolution. Copying
-# everything and letting bun resolve the workspace is simpler and
-# correctness-first at this repo's current size.
+# Workspace manifests only, so this layer -- and the install below -- is
+# cached across builds that don't touch a package.json. `bun install
+# --frozen-lockfile` needs every workspace member's package.json present
+# (verified: a partial copy makes bun report "lockfile had changes" and
+# fail), so all five have to come along even though this image only runs
+# apps/opencode.
+COPY package.json bun.lock tsconfig.json ./
+COPY apps/bot/package.json apps/bot/package.json
+COPY apps/opencode/package.json apps/opencode/package.json
+COPY packages/core/package.json packages/core/package.json
+COPY packages/github/package.json packages/github/package.json
+COPY packages/linear/package.json packages/linear/package.json
+RUN bun install --frozen-lockfile
+
+# Full monorepo context (see the root .dockerignore for exclusions) for
+# everything the manifest-only layer above didn't bring in.
 COPY . .
-RUN bun install --frozen-lockfile \
-    && chown -R opencode:opencode /home/opencode
+RUN chown -R opencode:opencode /home/opencode
 
 USER opencode
 WORKDIR /home/opencode/app/apps/opencode

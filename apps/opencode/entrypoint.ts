@@ -10,7 +10,7 @@ import { createOpencodeServer } from '@opencode-ai/sdk'
 import type { Config } from '@opencode-ai/sdk'
 import { parseEnv } from 'core/src/env.ts'
 import { opencodeEnvSchema } from './env.ts'
-import { agentsSchema, buildAgents } from './build-agents.ts'
+import { agentsSchema, buildAgents, PERMISSION, TOOLS } from './build-agents.ts'
 import staticConfig from './opencode.json' with { type: 'json' }
 
 const env = parseEnv(opencodeEnvSchema, process.env)
@@ -18,8 +18,23 @@ const env = parseEnv(opencodeEnvSchema, process.env)
 // opencode.json is hand-written JSON with nothing type-checking it, so its
 // `agent` map is parsed with the same schema build-agents.ts validates its
 // own agents against -- catches a typo'd field instead of silently widening
-// to `string` the way a plain `as Config['agent']` cast would.
-const staticAgents = agentsSchema.parse(staticConfig.agent ?? {})
+// to `string` the way a plain `as Config['agent']` cast would. Everything
+// else in opencode.json (theme, tui, keybinds, ...) is left as opaque static
+// config: `agent` is the only slice this app actively constructs/merges, and
+// the `opencode` CLI itself validates the rest when it loads
+// OPENCODE_CONFIG_CONTENT, so duplicating that validation here would just be
+// re-checking what the binary already checks.
+//
+// Static agents default to the same deny-all baseline the built pipeline
+// agents use (build-agents.ts's PERMISSION/TOOLS) rather than opencode.json
+// keeping its own copy -- that copy had already drifted (missing task/skill
+// denials). A static agent can still override either field explicitly.
+const staticAgents = Object.fromEntries(
+  Object.entries(agentsSchema.parse(staticConfig.agent ?? {})).map(([name, agent]) => [
+    name,
+    { permission: PERMISSION, tools: TOOLS, ...agent },
+  ])
+)
 
 const config: Config = {
   ...(staticConfig as Omit<Config, 'agent'>),

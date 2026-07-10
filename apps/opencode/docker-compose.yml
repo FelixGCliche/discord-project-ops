@@ -1,0 +1,12 @@
+services:
+  opencode:
+    build:
+      context: ../..
+      dockerfile: apps/opencode/Dockerfile
+    ports:
+      - '4096:4096'
+    environment:
+      OPENCODE_GO_API_KEY: '${OPENCODE_GO_API_KEY:?set this in apps/opencode/.env}'
+    env_file:
+      - .env
+    restart: unless-stopped
