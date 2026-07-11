@@ -19,4 +19,8 @@
     },
   },
   "compatibility_flags": ["nodejs_compat"],
+  "durable_objects": {
+    "bindings": [{ "name": "LINEAR_TOKEN_STORE", "class_name": "LinearTokenStore" }],
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["LinearTokenStore"] }],
 }

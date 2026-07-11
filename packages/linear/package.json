@@ -1,7 +1,7 @@
 {
   "name": "linear",
   "type": "module",
-  "module": "index.ts",
+  "module": "src/index.ts",
   "scripts": {
     "check": "tsc --noEmit && oxlint && oxfmt",
     "check:type": "tsc --noEmit",
@@ -9,6 +9,9 @@
     "check:format": "oxfmt --check",
     "fix:lint": "oxlint --fix",
     "fix:format": "oxfmt"
+  },
+  "dependencies": {
+    "@linear/sdk": "^88.0.0"
   },
   "devDependencies": {
     "@types/bun": "latest"

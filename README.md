@@ -78,15 +78,20 @@ until you say so.
 
 ```txt
 apps/
-  bot/         Cloudflare Worker: interactions, signature verify, PipelineSession
-               Durable Object, OAuth callbacks, the deterministic writes
-  opencode/    Docker image: opencode serve with a tool-less "pipeline" agent
+  bot/         Wrangler config + thin route wiring (deployment)
+  opencode/    Docker image: opencode serve with tool-less "pipeline" agents
 packages/
-  core/        zod schemas + derived JSON Schemas + role prompts + renderers
-  linear/      Linear SDK CRUD + OAuth
-  github/       GitHub-API client (read / commit / open-PR)
+  core/        Zod schemas + derived JSON Schemas + role prompts + renderers
+  linear/      Linear SDK CRUD + OAuth helpers (runtime-agnostic)
+  github/      GitHub API client (runtime-agnostic)
+  discord/     Discord interaction handling: signature verify, commands, responses (runtime-agnostic)
+  cloudflare/  Cloudflare Worker primitives: Durable Objects, env parsing, worker entrypoint
 vault/         git submodule: the actual Obsidian markdown (its own repo)
 ```
+
+Core logic lives in `packages/` with zero runtime-specific imports.
+Only `packages/cloudflare/` imports `cloudflare:workers`.
+`apps/bot/` is just deployment wiring — switching to Bun requires replacing only this directory.
 
 ## Architecture
 

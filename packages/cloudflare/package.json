@@ -1,7 +1,7 @@
 {
-  "name": "bot",
+  "name": "cloudflare",
   "type": "module",
-  "module": "index.ts",
+  "module": "src/index.ts",
   "scripts": {
     "check": "tsc --noEmit && oxlint && oxfmt",
     "check:type": "tsc --noEmit",
@@ -11,12 +11,11 @@
     "fix:format": "oxfmt"
   },
   "dependencies": {
-    "cloudflare": "workspace:*",
     "linear": "workspace:*"
   },
   "devDependencies": {
-    "@types/bun": "latest",
-    "wrangler": "^4.108.0"
+    "@cloudflare/workers-types": "^4",
+    "@types/bun": "latest"
   },
   "peerDependencies": {
     "typescript": "^5"
