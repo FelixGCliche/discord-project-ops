@@ -4,7 +4,7 @@ import staticConfig from '../../opencode.json' with { type: 'json' }
 import { agentsSchema, PERMISSION, TOOLS, type Agents } from './agent-config-schema.ts'
 import { buildAgents } from './build-agents.ts'
 
-export function parseStaticAgents(rawAgents: unknown): Agents {
+export function parseStaticAgents(rawAgents: z.input<typeof agentsSchema> | undefined): Agents {
   const parsed = agentsSchema.safeParse(rawAgents ?? {})
   if (!parsed.success) {
     throw new Error(`opencode.json has an invalid agent config:\n${z.prettifyError(parsed.error)}`)

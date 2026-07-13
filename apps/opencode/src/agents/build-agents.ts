@@ -1,4 +1,4 @@
-import { PROMPTS } from 'core/src/prompts.ts'
+import { PROMPTS } from 'core'
 import { PERMISSION, TOOLS, type Agents } from './agent-config-schema.ts'
 
 export const MODEL = 'opencode-go/deepseek-v4-pro'

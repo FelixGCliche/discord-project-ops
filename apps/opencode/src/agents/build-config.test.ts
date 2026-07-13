@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import type { AgentConfig } from '@opencode-ai/sdk'
-import { PROMPTS } from 'core/src/prompts.ts'
+import { PROMPTS } from 'core'
 import staticConfig from '../../opencode.json' with { type: 'json' }
 import { buildConfig, parseStaticAgents } from './build-config.ts'
 import { PERMISSION, TOOLS } from './agent-config-schema.ts'

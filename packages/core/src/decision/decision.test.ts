@@ -17,7 +17,7 @@ describe('DecisionSchema', () => {
     const result = DecisionSchema.safeParse(decisionInvalid.missingTitle)
     expect(result.success).toBe(false)
     if (!result.success) {
-      expect(result.error.issues.some((i: { path: any[] }) => i.path.join('.') === 'title')).toBe(true)
+      expect(result.error.issues.some((i) => i.path.join('.') === 'title')).toBe(true)
     }
   })
 
@@ -27,7 +27,7 @@ describe('DecisionSchema', () => {
   })
 })
 
-describe('renderDecision', () => {
+describe('renderDecision()', () => {
   test('matches snapshot', () => {
     const decision = DecisionSchema.parse(decisionValid)
     expect(renderDecision(decision)).toMatchSnapshot()

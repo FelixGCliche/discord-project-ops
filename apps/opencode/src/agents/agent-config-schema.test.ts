@@ -64,7 +64,7 @@ describe('agentConfigSchema', () => {
     })
     expect(result.success).toBe(true)
     if (!result.success) return
-    expect((result.data as Record<string, unknown>).extraField).toBeUndefined()
+    expect((result.data as Record<string, string>).extraField).toBeUndefined()
   })
 
   test('rejects non-boolean tools values', () => {
@@ -112,7 +112,7 @@ describe('agentsSchema', () => {
   })
 })
 
-describe('PERMISSION constant', () => {
+describe('PERMISSION', () => {
   test('has the expected keys', () => {
     const keys = Object.keys(PERMISSION)
     expect(keys).toEqual(['edit', 'bash', 'webfetch', 'external_directory', 'doom_loop'])
@@ -123,7 +123,7 @@ describe('PERMISSION constant', () => {
   })
 })
 
-describe('TOOLS constant', () => {
+describe('TOOLS', () => {
   test('has the expected keys', () => {
     const keys = Object.keys(TOOLS)
     expect(keys).toEqual([

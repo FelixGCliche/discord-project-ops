@@ -1,9 +1,9 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import { prettifyError } from 'zod'
-import { DecisionSchema, IssuesSchema, JSON_SCHEMAS, PlanSchema } from 'core/src/index.ts'
-import decisionFixture from 'core/src/decision/fixtures/decision.valid.json'
+import { DecisionSchema, IssuesSchema, JSON_SCHEMAS, PlanSchema } from 'core'
+import decisionFixture from 'core/decision/fixtures/decision.valid.json'
 import messagesFixture from './fixtures/messages.valid.json'
-import planFixture from 'core/src/plan/fixtures/plan.valid.json'
+import planFixture from 'core/plan/fixtures/plan.valid.json'
 import { shouldRunLive } from './env.ts'
 import { connectTestServer, type TestServer } from './server.ts'
 
@@ -15,12 +15,12 @@ function systemPromptFor(schema: object): string {
   return `Respond with JSON only, matching this JSON Schema exactly. No prose, no code fences:\n${JSON.stringify(schema)}`
 }
 
-function parseJSONResponse(text: string) {
+function parseJSONResponse(text: string): object {
   const fenced = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/)
   return JSON.parse(fenced ? fenced[1]! : text)
 }
 
-async function promptStage(server: TestServer, agent: string, schema: object, inputText: string): Promise<unknown> {
+async function promptStage(server: TestServer, agent: string, schema: object, inputText: string): Promise<object> {
   const session = await server.client.session.create({ body: {} })
   if (!session.data) throw new Error(`session.create failed: ${JSON.stringify(session.error)}`)
 

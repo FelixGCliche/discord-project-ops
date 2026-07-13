@@ -1,17 +1,22 @@
-import { LinearClient, exchangeCodeForToken, getAuthorizationUrl, verifySignedState } from 'linear/src/index'
-import { createWorkerFetch, LinearTokenStore } from 'cloudflare/src/index'
-import type { BotEnv } from './env'
+import { LinearClient, exchangeCodeForToken, getAuthorizationUrl, verifySignedState } from 'linear'
+import { createWorkerFetch, LinearTokenStore } from 'cloudflare'
+import { parseEnv } from 'core'
+import { botEnvSchema, type BotEnv } from './env'
 
 export { LinearTokenStore }
 
-type Env = BotEnv & { LINEAR_TOKEN_STORE: DurableObjectNamespace<LinearTokenStore> }
-
-const fetchHandler = createWorkerFetch<Env>({
-  '/oauth/authorize': async (_request, env) => {
-    const url = await getAuthorizationUrl(env)
-    return Response.redirect(url, 302)
+const fetchHandler = createWorkerFetch<BotEnv>({
+  '/oauth/authorize': async (request, env) => {
+    parseEnv(botEnvSchema, env)
+    const url = new URL(request.url)
+    if (url.searchParams.get('token') !== env.BOT_ADMIN_TOKEN) {
+      return new Response('Unauthorized', { status: 401 })
+    }
+    const authUrl = await getAuthorizationUrl(env)
+    return Response.redirect(authUrl, 302)
   },
   '/oauth/callback': async (request, env) => {
+    parseEnv(botEnvSchema, env)
     const url = new URL(request.url)
     const code = url.searchParams.get('code')
     const state = url.searchParams.get('state')
@@ -19,7 +24,7 @@ const fetchHandler = createWorkerFetch<Env>({
       return new Response('Missing code or state', { status: 400 })
     }
 
-    const isValid = await verifySignedState(env.LINEAR_OAUTH_CLIENT_SECRET, state)
+    const isValid = await verifySignedState(env.LINEAR_OAUTH_STATE_SECRET, state)
     if (!isValid) {
       return new Response('Invalid or expired state', { status: 400 })
     }

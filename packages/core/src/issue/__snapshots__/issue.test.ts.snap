@@ -44,3 +44,48 @@ Compute carryCapacity from the character's strength stat. Acceptance: capacity u
 Rework inventory UI from a slot grid to a weight-based list with a capacity bar. Acceptance: matches plan's UI workstream. See plans/post_123.md.
 "
 `;
+
+exports[`renderIssue() / renderIssues() renderIssue matches snapshot for a single issue 1`] = `
+"### Add weight column to item table
+**Labels:** design, data
+**Team:** ENG
+**Depends on:** _none_
+
+Add a \`weight\` numeric column to the item table. Acceptance: every item row has a non-null weight. See plans/post_123.md."
+`;
+
+exports[`renderIssue() / renderIssues() renderIssues matches snapshot for the full proposed list 1`] = `
+"# Proposed Issues: post_123
+
+**Plan ref:** plans/post_123.md
+**Count:** 4
+
+### Add weight column to item table
+**Labels:** design, data
+**Team:** ENG
+**Depends on:** _none_
+
+Add a \`weight\` numeric column to the item table. Acceptance: every item row has a non-null weight. See plans/post_123.md.
+
+### Backfill weights for existing items
+**Labels:** data
+**Team:** _unset_
+**Depends on:** Add weight column to item table
+
+Backfill weight values for all existing items. Acceptance: no item has a null/zero weight in prod. See plans/post_123.md.
+
+### Derive carryCapacity from strength stat
+**Labels:** gameplay
+**Team:** _unset_
+**Depends on:** Add weight column to item table
+
+Compute carryCapacity from the character's strength stat. Acceptance: capacity updates live when strength changes. See plans/post_123.md.
+
+### Replace slot grid with weight-based list view
+**Labels:** ui
+**Team:** _unset_
+**Depends on:** Derive carryCapacity from strength stat
+
+Rework inventory UI from a slot grid to a weight-based list with a capacity bar. Acceptance: matches plan's UI workstream. See plans/post_123.md.
+"
+`;

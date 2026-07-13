@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { parseEnv } from 'core/src/env.ts'
+import { parseEnv } from 'core'
 import { opencodeEnvSchema } from '../../env.ts'
 
 const testEnvSchema = z.object({

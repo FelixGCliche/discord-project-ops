@@ -21,6 +21,7 @@
       "name": "bot",
       "dependencies": {
         "cloudflare": "workspace:*",
+        "core": "workspace:*",
         "linear": "workspace:*",
       },
       "devDependencies": {

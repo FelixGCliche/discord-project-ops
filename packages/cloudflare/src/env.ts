@@ -1,8 +1,11 @@
 import { z } from 'zod'
-import { linearEnvSchema } from 'linear/src/env'
+import { linearEnvSchema } from 'linear'
+import type { LinearTokenStore } from './objects/linear-token-store'
 
 export const workerEnvSchema = z.object({
   ...linearEnvSchema.shape,
 })
 
-export type WorkerEnv = z.infer<typeof workerEnvSchema>
+export type WorkerEnv = z.infer<typeof workerEnvSchema> & {
+  LINEAR_TOKEN_STORE: DurableObjectNamespace<LinearTokenStore>
+}

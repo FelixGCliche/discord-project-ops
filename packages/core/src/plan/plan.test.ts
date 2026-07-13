@@ -17,7 +17,7 @@ describe('PlanSchema', () => {
     const result = PlanSchema.safeParse(planInvalid.emptyWorkstreams)
     expect(result.success).toBe(false)
     if (!result.success) {
-      expect(result.error.issues.some((i: { path: any[] }) => i.path.join('.') === 'workstreams')).toBe(true)
+      expect(result.error.issues.some((i) => i.path.join('.') === 'workstreams')).toBe(true)
     }
   })
 
@@ -25,12 +25,12 @@ describe('PlanSchema', () => {
     const result = PlanSchema.safeParse(planInvalid.missingDecisionRef)
     expect(result.success).toBe(false)
     if (!result.success) {
-      expect(result.error.issues.some((i: { path: any[] }) => i.path.join('.') === 'decision_ref')).toBe(true)
+      expect(result.error.issues.some((i) => i.path.join('.') === 'decision_ref')).toBe(true)
     }
   })
 })
 
-describe('renderPlan', () => {
+describe('renderPlan()', () => {
   test('matches snapshot', () => {
     const plan = PlanSchema.parse(planValid)
     expect(renderPlan(plan)).toMatchSnapshot()

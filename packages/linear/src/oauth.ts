@@ -60,7 +60,7 @@ export async function verifySignedState(secret: string, state: string, maxAgeMs 
 }
 
 export async function getAuthorizationUrl(env: LinearEnv): Promise<string> {
-  const state = await createSignedState(env.LINEAR_OAUTH_CLIENT_SECRET)
+  const state = await createSignedState(env.LINEAR_OAUTH_STATE_SECRET)
   const params = new URLSearchParams({
     client_id: env.LINEAR_OAUTH_CLIENT_ID,
     redirect_uri: env.LINEAR_OAUTH_REDIRECT_URI,
@@ -71,8 +71,14 @@ export async function getAuthorizationUrl(env: LinearEnv): Promise<string> {
   return `${LINEAR_AUTHORIZE_URL}?${params.toString()}`
 }
 
-export async function exchangeCodeForToken(env: LinearEnv, code: string): Promise<LinearTokenResponse> {
-  const response = await fetch(LINEAR_TOKEN_URL, {
+type FetchImpl = (input: string | URL, init?: RequestInit) => Promise<Response>
+
+export async function exchangeCodeForToken(
+  env: LinearEnv,
+  code: string,
+  fetchImpl: FetchImpl = fetch
+): Promise<LinearTokenResponse> {
+  const response = await fetchImpl(LINEAR_TOKEN_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({

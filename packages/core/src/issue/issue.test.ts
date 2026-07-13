@@ -44,7 +44,7 @@ describe('IssuesSchema', () => {
   })
 })
 
-describe('renderIssue / renderIssues', () => {
+describe('renderIssue() / renderIssues()', () => {
   test('renderIssue matches snapshot for a single issue', () => {
     const doc = IssuesSchema.parse(issuesValid)
     expect(renderIssue(doc.issues[0]!)).toMatchSnapshot()

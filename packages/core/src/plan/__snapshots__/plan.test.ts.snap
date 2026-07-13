@@ -45,3 +45,49 @@ _none_
 - Should mounts/pack animals get separate weight pools?
 "
 `;
+
+exports[`renderPlan() matches snapshot 1`] = `
+"# Plan: post_123
+
+**Decision ref:** decisions/post_123.md
+
+## Summary
+Replace slot-based inventory with a weight-based system capped by character strength.
+
+## Approach
+Add a \`weight\` field to the item table, a \`carryCapacity\` stat derived from strength, and rework the inventory UI to show a capacity bar instead of slots.
+
+## Affected Areas
+- ItemDatabase
+- InventoryUI
+- CharacterStats
+
+## Workstreams
+### Data model
+**Goal:** Every item has a weight value and capacity is derived correctly
+
+**Steps:**
+1. Add weight column to item table
+2. Backfill weights for existing items
+3. Derive carryCapacity from strength stat
+
+**Risks:**
+- Backfilling ~400 existing items by hand is slow and error-prone
+
+### Inventory UI
+**Goal:** Players can see current load vs capacity and get warned near the cap
+
+**Steps:**
+1. Replace slot grid with weight-based list view
+2. Add capacity bar with warning state near cap
+
+**Risks:**
+_none_
+
+## Cross-Workstream Dependencies
+- Inventory UI workstream depends on Data model workstream
+
+## Open Questions
+- Should mounts/pack animals get separate weight pools?
+"
+`;

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { PROMPTS } from 'core/src/prompts.ts'
+import { PROMPTS } from 'core'
 import { agentsSchema, PERMISSION, TOOLS } from './agent-config-schema.ts'
 import { buildAgents, MODEL, STAGE_AGENTS } from './build-agents.ts'
 
