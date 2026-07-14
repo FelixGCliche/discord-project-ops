@@ -1,7 +1,7 @@
 import { LinearClient, exchangeCodeForToken, getAuthorizationUrl, verifySignedState } from 'linear'
 import { type RouteHandlers } from 'cloudflare'
 import { parseEnv } from 'core'
-import { botEnvSchema, type BotEnv } from './env'
+import { botEnvSchema, type BotEnv } from '../env'
 
 export const linearOAuthHandler: RouteHandlers<BotEnv> = {
   '/oauth/authorize': async (request, env) => {
