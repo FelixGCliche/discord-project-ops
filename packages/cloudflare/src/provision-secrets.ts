@@ -22,7 +22,7 @@ async function putSecret(
   const response = await fetch(
     `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/${WORKER_SCRIPT_NAME}/secrets`,
     {
-      method: 'POST',
+      method: 'PUT',
       headers: {
         Authorization: `Bearer ${apiToken}`,
         'Content-Type': 'application/json',
