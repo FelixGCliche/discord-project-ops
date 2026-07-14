@@ -49,6 +49,7 @@
     "packages/cloudflare": {
       "name": "cloudflare",
       "dependencies": {
+        "core": "workspace:*",
         "linear": "workspace:*",
       },
       "devDependencies": {

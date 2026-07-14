@@ -15,6 +15,7 @@
     "fix:format": "oxfmt"
   },
   "dependencies": {
+    "core": "workspace:*",
     "linear": "workspace:*"
   },
   "devDependencies": {
