@@ -33,7 +33,13 @@ export const linearOAuthHandler: RouteHandlers<BotEnv> = {
 
     const id = env.LINEAR_TOKEN_STORE.idFromName('linear-token-store')
     const stub = env.LINEAR_TOKEN_STORE.get(id)
-    await stub.storeAuth(token.access_token, organization.name, token.scope.split(','))
+    await stub.storeAuth(
+      token.access_token,
+      token.refresh_token,
+      token.expires_in,
+      organization.name,
+      token.scope.split(',')
+    )
 
     return new Response('Linear connected successfully. You can close this tab.')
   },

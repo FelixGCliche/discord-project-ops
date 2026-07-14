@@ -3,6 +3,7 @@ export { linearEnvSchema, type LinearEnv } from './env'
 export {
   getAuthorizationUrl,
   exchangeCodeForToken,
+  refreshAccessToken,
   createSignedState,
   verifySignedState,
   type LinearTokenResponse,

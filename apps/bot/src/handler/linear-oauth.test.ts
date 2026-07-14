@@ -6,6 +6,8 @@ const exchangeCodeForTokenMock = mock(async () => ({
   access_token: 'token-123',
   token_type: 'Bearer',
   scope: 'read,issues:create',
+  expires_in: 86399,
+  refresh_token: 'refresh-123',
 }))
 
 let organizationValue: { name: string } = { name: 'Acme Inc' }
@@ -50,6 +52,8 @@ beforeEach(() => {
     access_token: 'token-123',
     token_type: 'Bearer',
     scope: 'read,issues:create',
+    expires_in: 86399,
+    refresh_token: 'refresh-123',
   }))
   organizationValue = { name: 'Acme Inc' }
 })
@@ -124,7 +128,7 @@ describe('/oauth/callback', () => {
     expect(exchangeCodeForTokenMock).toHaveBeenCalledWith(env, 'some-code')
     expect(idFromName).toHaveBeenCalledWith('linear-token-store')
     expect(get).toHaveBeenCalled()
-    expect(storeAuth).toHaveBeenCalledWith('token-123', 'Acme Inc', ['read', 'issues:create'])
+    expect(storeAuth).toHaveBeenCalledWith('token-123', 'refresh-123', 86399, 'Acme Inc', ['read', 'issues:create'])
     expect(response.status).toBe(200)
     expect(await response.text()).toContain('Linear connected successfully')
   })
