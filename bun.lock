@@ -10,7 +10,6 @@
       "devDependencies": {
         "@cloudflare/workers-types": "^4",
         "@types/bun": "latest",
-        "jsonc-parser": "3.2.0",
         "oxfmt": "^0.56.0",
         "oxlint": "^1.71.0",
       },
@@ -51,6 +50,7 @@
       "name": "cloudflare",
       "dependencies": {
         "core": "workspace:*",
+        "jsonc-parser": "3.2.0",
         "linear": "workspace:*",
       },
       "devDependencies": {
@@ -83,6 +83,7 @@
       "name": "linear",
       "dependencies": {
         "@linear/sdk": "^88.0.0",
+        "core": "workspace:*",
       },
       "devDependencies": {
         "@types/bun": "latest",

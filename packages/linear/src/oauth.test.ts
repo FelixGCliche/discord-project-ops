@@ -1,12 +1,7 @@
 import { describe, expect, test } from 'bun:test'
+import { verifySignedState } from 'core'
 import type { LinearEnv } from './env'
-import {
-  createSignedState,
-  exchangeCodeForToken,
-  getAuthorizationUrl,
-  refreshAccessToken,
-  verifySignedState,
-} from './oauth'
+import { exchangeCodeForToken, getAuthorizationUrl, refreshAccessToken } from './oauth'
 
 const ENV: LinearEnv = {
   LINEAR_OAUTH_CLIENT_ID: 'client-id',
@@ -31,39 +26,6 @@ describe('getAuthorizationUrl()', () => {
     const state = url.searchParams.get('state')!
     const isValid = await verifySignedState(ENV.LINEAR_OAUTH_STATE_SECRET, state)
     expect(isValid).toBe(true)
-  })
-})
-
-describe('createSignedState() / verifySignedState()', () => {
-  test('accepts a state signed with the same secret', async () => {
-    const state = await createSignedState(ENV.LINEAR_OAUTH_STATE_SECRET)
-    const isValid = await verifySignedState(ENV.LINEAR_OAUTH_STATE_SECRET, state)
-    expect(isValid).toBe(true)
-  })
-
-  test('rejects a state signed with a different secret', async () => {
-    const state = await createSignedState('other-secret')
-    const isValid = await verifySignedState(ENV.LINEAR_OAUTH_STATE_SECRET, state)
-    expect(isValid).toBe(false)
-  })
-
-  test('rejects a tampered signature', async () => {
-    const state = await createSignedState(ENV.LINEAR_OAUTH_STATE_SECRET)
-    const [nonce, timestamp] = state.split('.')
-    const tampered = `${nonce}.${timestamp}.not-the-real-signature`
-    const isValid = await verifySignedState(ENV.LINEAR_OAUTH_STATE_SECRET, tampered)
-    expect(isValid).toBe(false)
-  })
-
-  test('rejects a malformed state', async () => {
-    const isValid = await verifySignedState(ENV.LINEAR_OAUTH_STATE_SECRET, 'not-a-valid-state')
-    expect(isValid).toBe(false)
-  })
-
-  test('rejects an expired state', async () => {
-    const state = await createSignedState(ENV.LINEAR_OAUTH_STATE_SECRET)
-    const isValid = await verifySignedState(ENV.LINEAR_OAUTH_STATE_SECRET, state, -1)
-    expect(isValid).toBe(false)
   })
 })
 

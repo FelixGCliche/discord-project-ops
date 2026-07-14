@@ -15,7 +15,8 @@
     "fix:format": "oxfmt"
   },
   "dependencies": {
-    "@linear/sdk": "^88.0.0"
+    "@linear/sdk": "^88.0.0",
+    "core": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "latest"

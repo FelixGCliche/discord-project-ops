@@ -1,5 +1,7 @@
 import { fileURLToPath } from 'node:url'
 import { parseEnv } from 'core'
+// apps/bot isn't set up as an importable workspace package (no `exports` map), so this
+// reaches in by relative path rather than via a package import like the rest of this file's deps.
 import { botEnvSchema } from '../../../apps/bot/src/env.ts'
 
 // Must match the `name` field in apps/bot/wrangler.jsonc
@@ -7,7 +9,7 @@ const WORKER_SCRIPT_NAME = 'discord-project-ops'
 
 const BOT_DEV_VARS_PATH = new URL('../../../apps/bot/.dev.vars', import.meta.url)
 
-function serializeDotenv(values: Record<string, string>): string {
+export function serializeDotenv(values: Record<string, string>): string {
   return Object.entries(values)
     .map(([key, value]) => `${key}=${value}`)
     .join('\n')
@@ -68,7 +70,9 @@ async function main() {
   console.log(`Pushed ${Object.keys(secrets).length} secret(s) to ${WORKER_SCRIPT_NAME}`)
 }
 
-main().catch((error: unknown) => {
-  console.error(error instanceof Error ? error.message : error)
-  process.exit(1)
-})
+if (import.meta.main) {
+  main().catch((error: unknown) => {
+    console.error(error instanceof Error ? error.message : error)
+    process.exit(1)
+  })
+}

@@ -1,13 +1,15 @@
-import { LinearClient, exchangeCodeForToken, getAuthorizationUrl, verifySignedState } from 'linear'
+import { LinearClient, exchangeCodeForToken, getAuthorizationUrl } from 'linear'
 import { type RouteHandlers } from 'cloudflare'
-import { parseEnv } from 'core'
+import { parseEnv, timingSafeEqual, verifySignedState } from 'core'
 import { botEnvSchema, type BotEnv } from '../env'
 
 export const linearOAuthHandler: RouteHandlers<BotEnv> = {
+  // BOT_ADMIN_TOKEN travels as a query param here so this link can be shared/clicked directly;
+  // treat it like a bearer secret (it can end up in browser history or access logs).
   '/oauth/authorize': async (request, env) => {
     parseEnv(botEnvSchema, env)
     const url = new URL(request.url)
-    if (url.searchParams.get('token') !== env.BOT_ADMIN_TOKEN) {
+    if (!timingSafeEqual(url.searchParams.get('token') ?? '', env.BOT_ADMIN_TOKEN)) {
       return new Response('Unauthorized', { status: 401 })
     }
     const authUrl = await getAuthorizationUrl(env)

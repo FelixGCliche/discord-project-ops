@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, mock, test } from 'bun:test'
 import * as linearReal from 'linear'
+import { createSignedState } from 'core'
 import type { BotEnv } from '../env'
 
 const exchangeCodeForTokenMock = mock(async () => ({
@@ -118,7 +119,7 @@ describe('/oauth/callback', () => {
 
   test('exchanges the code, stores the auth, and returns 200 on a valid callback', async () => {
     const { env, storeAuth, idFromName, get } = createEnv()
-    const state = await linearReal.createSignedState(env.LINEAR_OAUTH_STATE_SECRET)
+    const state = await createSignedState(env.LINEAR_OAUTH_STATE_SECRET)
     const request = new Request(
       `https://bot.example.com/oauth/callback?code=some-code&state=${encodeURIComponent(state)}`
     )
@@ -138,7 +139,7 @@ describe('/oauth/callback', () => {
     exchangeCodeForTokenMock.mockImplementation(async () => {
       throw new Error('Linear token exchange failed: 401')
     })
-    const state = await linearReal.createSignedState(env.LINEAR_OAUTH_STATE_SECRET)
+    const state = await createSignedState(env.LINEAR_OAUTH_STATE_SECRET)
     const request = new Request(
       `https://bot.example.com/oauth/callback?code=some-code&state=${encodeURIComponent(state)}`
     )
@@ -149,7 +150,7 @@ describe('/oauth/callback', () => {
 
   test('rejects when the env is invalid', async () => {
     const { env } = createEnv({ BOT_ADMIN_TOKEN: undefined as unknown as string })
-    const state = await linearReal.createSignedState(env.LINEAR_OAUTH_STATE_SECRET)
+    const state = await createSignedState(env.LINEAR_OAUTH_STATE_SECRET)
     const request = new Request(
       `https://bot.example.com/oauth/callback?code=some-code&state=${encodeURIComponent(state)}`
     )
