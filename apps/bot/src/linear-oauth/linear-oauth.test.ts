@@ -1,34 +1,14 @@
-import { beforeEach, describe, expect, mock, test } from 'bun:test'
-import * as linearReal from 'linear'
+import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
 import { createSignedState } from 'core'
 import type { BotEnv } from '../env'
+import { linearOAuthHandler } from './index'
+import { linearSdkMock } from './linear-sdk-mock.preload'
 
-const exchangeCodeForTokenMock = mock(async () => ({
-  access_token: 'token-123',
-  token_type: 'Bearer',
-  scope: 'read,issues:create',
-  expires_in: 86399,
-  refresh_token: 'refresh-123',
-}))
-
-let organizationValue: { name: string } = { name: 'Acme Inc' }
-
-class FakeLinearClient {
-  constructor(public options: { accessToken: string }) {}
-  get organization() {
-    return Promise.resolve(organizationValue)
-  }
-}
-
-mock.module('linear', () => ({
-  ...linearReal,
-  exchangeCodeForToken: exchangeCodeForTokenMock,
-  LinearClient: FakeLinearClient,
-}))
-
-const { linearOAuthHandler } = await import('./linear-oauth')
 const authorizeHandler = linearOAuthHandler['/oauth/authorize']!
 const callbackHandler = linearOAuthHandler['/oauth/callback']!
+
+const LINEAR_TOKEN_URL = 'https://api.linear.app/oauth/token'
+const originalFetch = globalThis.fetch
 
 function createEnv(overrides: Partial<BotEnv> = {}) {
   const storeAuth = mock(async () => {})
@@ -47,16 +27,33 @@ function createEnv(overrides: Partial<BotEnv> = {}) {
   return { env, storeAuth, idFromName, get }
 }
 
-beforeEach(() => {
-  exchangeCodeForTokenMock.mockClear()
-  exchangeCodeForTokenMock.mockImplementation(async () => ({
+const tokenFetchMock = mock(async (_url: string | URL, _init?: RequestInit) =>
+  Response.json({
     access_token: 'token-123',
     token_type: 'Bearer',
     scope: 'read,issues:create',
     expires_in: 86399,
     refresh_token: 'refresh-123',
-  }))
-  organizationValue = { name: 'Acme Inc' }
+  })
+)
+
+beforeEach(() => {
+  tokenFetchMock.mockClear()
+  tokenFetchMock.mockImplementation(async (_url: string | URL, _init?: RequestInit) =>
+    Response.json({
+      access_token: 'token-123',
+      token_type: 'Bearer',
+      scope: 'read,issues:create',
+      expires_in: 86399,
+      refresh_token: 'refresh-123',
+    })
+  )
+  globalThis.fetch = tokenFetchMock as unknown as typeof fetch
+  linearSdkMock.organization = { name: 'Acme Inc' }
+})
+
+afterEach(() => {
+  globalThis.fetch = originalFetch
 })
 
 describe('/oauth/authorize', () => {
@@ -126,7 +123,12 @@ describe('/oauth/callback', () => {
 
     const response = await callbackHandler(request, env)
 
-    expect(exchangeCodeForTokenMock).toHaveBeenCalledWith(env, 'some-code')
+    expect(tokenFetchMock).toHaveBeenCalledTimes(1)
+    const [url, init] = tokenFetchMock.mock.calls[0]!
+    expect(url).toBe(LINEAR_TOKEN_URL)
+    const body = new URLSearchParams(init?.body as string)
+    expect(body.get('code')).toBe('some-code')
+    expect(body.get('grant_type')).toBe('authorization_code')
     expect(idFromName).toHaveBeenCalledWith('linear-token-store')
     expect(get).toHaveBeenCalled()
     expect(storeAuth).toHaveBeenCalledWith('token-123', 'refresh-123', 86399, 'Acme Inc', ['read', 'issues:create'])
@@ -136,9 +138,7 @@ describe('/oauth/callback', () => {
 
   test('rejects and never stores auth when the token exchange fails', async () => {
     const { env, storeAuth } = createEnv()
-    exchangeCodeForTokenMock.mockImplementation(async () => {
-      throw new Error('Linear token exchange failed: 401')
-    })
+    tokenFetchMock.mockImplementation(async () => new Response('error', { status: 401 }))
     const state = await createSignedState(env.LINEAR_OAUTH_STATE_SECRET)
     const request = new Request(
       `https://bot.example.com/oauth/callback?code=some-code&state=${encodeURIComponent(state)}`

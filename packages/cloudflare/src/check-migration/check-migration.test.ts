@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, mock, test } from 'bun:test'
-import { determineHasMigration } from './check-migration'
+import { determineHasMigration } from './index'
 
 const originalFetch = globalThis.fetch
 

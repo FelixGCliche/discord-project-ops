@@ -20,7 +20,7 @@ jobs:
 
       - name: Check for new migration
         id: check
-        run: bun run packages/cloudflare/src/check-migration.ts
+        run: bun run packages/cloudflare/src/check-migration/index.ts
         env:
           BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

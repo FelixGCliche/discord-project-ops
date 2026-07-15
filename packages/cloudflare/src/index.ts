@@ -1,5 +1,5 @@
-export { LinearTokenStore } from './objects/linear-token-store'
-export type { AuthState } from './objects/linear-token-store'
+export { LinearTokenStore } from './linear-token-store'
+export type { AuthState } from './linear-token-store'
 export { workerEnvSchema, type WorkerEnv } from './env'
 export { createWorkerFetch } from './worker'
 export type { RouteHandlers } from './worker'

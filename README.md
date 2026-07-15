@@ -95,7 +95,8 @@ Only `packages/cloudflare/` imports `cloudflare:workers`.
 
 ## Architecture
 
-Two runtimes, divided by a hard boundary, plus the vault as a separate repo.
+Two runtimes, divided by a hard boundary, plus the vault as a separate repo. See
+[ARCHITECTURE.md](ARCHITECTURE.md) for how code inside each package/app is organized.
 
 ```mermaid
 flowchart TD

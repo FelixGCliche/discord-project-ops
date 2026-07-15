@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { createSignedState } from 'core'
-import type { LinearEnv } from './env'
+import type { LinearEnv } from '../env'
 
 const LINEAR_AUTHORIZE_URL = 'https://linear.app/oauth/authorize'
 const LINEAR_TOKEN_URL = 'https://api.linear.app/oauth/token'

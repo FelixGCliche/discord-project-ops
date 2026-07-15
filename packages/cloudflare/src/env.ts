@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { linearEnvSchema } from 'linear'
-import type { LinearTokenStore } from './objects/linear-token-store'
+import type { LinearTokenStore } from './linear-token-store'
 
 export const workerEnvSchema = z.object({
   ...linearEnvSchema.shape,

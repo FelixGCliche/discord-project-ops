@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { createSignedState, timingSafeEqual, verifySignedState } from './signed-state'
+import { createSignedState, timingSafeEqual, verifySignedState } from './index'
 
 describe('createSignedState() / verifySignedState()', () => {
   test('accepts a state signed with the same secret', async () => {

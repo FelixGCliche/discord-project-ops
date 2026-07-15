@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import { verifySignedState } from 'core'
-import type { LinearEnv } from './env'
-import { exchangeCodeForToken, getAuthorizationUrl, refreshAccessToken } from './oauth'
+import type { LinearEnv } from '../env'
+import { exchangeCodeForToken, getAuthorizationUrl, refreshAccessToken } from './index'
 
 const ENV: LinearEnv = {
   LINEAR_OAUTH_CLIENT_ID: 'client-id',

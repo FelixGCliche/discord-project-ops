@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { serializeDotenv } from './provision-secrets'
+import { serializeDotenv } from './index'
 
 describe('serializeDotenv', () => {
   test('joins entries as KEY=value lines', () => {

@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { workerEnvSchema, type WorkerEnv } from 'cloudflare/env.ts'
+import { workerEnvSchema, type WorkerEnv } from 'cloudflare'
 
 export const botEnvSchema = z.object({
   BOT_ADMIN_TOKEN: z.string().min(1),

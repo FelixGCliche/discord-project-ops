@@ -1,6 +1,6 @@
 import { createWorkerFetch, LinearTokenStore } from 'cloudflare'
 import { type BotEnv } from './env'
-import { linearOAuthHandler } from './handler/linear-oauth'
+import { linearOAuthHandler } from './linear-oauth'
 
 export { LinearTokenStore }
 
