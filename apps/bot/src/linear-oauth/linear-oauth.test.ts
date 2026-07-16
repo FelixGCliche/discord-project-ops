@@ -1,14 +1,11 @@
-import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
+import { beforeEach, describe, expect, mock, test } from 'bun:test'
 import { createSignedState } from 'core'
+import { buildLinearTokenResponse } from 'linear/oauth/oauth.fixtures.ts'
 import type { BotEnv } from '../env'
-import { linearOAuthHandler } from './index'
+import { createLinearOAuthHandler } from './index'
 import { linearSdkMock } from './linear-sdk-mock.preload'
 
-const authorizeHandler = linearOAuthHandler['/oauth/authorize']!
-const callbackHandler = linearOAuthHandler['/oauth/callback']!
-
 const LINEAR_TOKEN_URL = 'https://api.linear.app/oauth/token'
-const originalFetch = globalThis.fetch
 
 function createEnv(overrides: Partial<BotEnv> = {}) {
   const storeAuth = mock(async () => {})
@@ -27,33 +24,16 @@ function createEnv(overrides: Partial<BotEnv> = {}) {
   return { env, storeAuth, idFromName, get }
 }
 
-const tokenFetchMock = mock(async (_url: string | URL, _init?: RequestInit) =>
-  Response.json({
-    access_token: 'token-123',
-    token_type: 'Bearer',
-    scope: 'read,issues:create',
-    expires_in: 86399,
-    refresh_token: 'refresh-123',
-  })
-)
+let tokenFetchMock: ReturnType<typeof mock<(url: string | URL, init?: RequestInit) => Promise<Response>>>
+let authorizeHandler: NonNullable<ReturnType<typeof createLinearOAuthHandler>['/oauth/authorize']>
+let callbackHandler: NonNullable<ReturnType<typeof createLinearOAuthHandler>['/oauth/callback']>
 
 beforeEach(() => {
-  tokenFetchMock.mockClear()
-  tokenFetchMock.mockImplementation(async (_url: string | URL, _init?: RequestInit) =>
-    Response.json({
-      access_token: 'token-123',
-      token_type: 'Bearer',
-      scope: 'read,issues:create',
-      expires_in: 86399,
-      refresh_token: 'refresh-123',
-    })
-  )
-  globalThis.fetch = tokenFetchMock as unknown as typeof fetch
+  tokenFetchMock = mock(async () => Response.json(buildLinearTokenResponse()))
+  const handlers = createLinearOAuthHandler(tokenFetchMock)
+  authorizeHandler = handlers['/oauth/authorize']!
+  callbackHandler = handlers['/oauth/callback']!
   linearSdkMock.organization = { name: 'Acme Inc' }
-})
-
-afterEach(() => {
-  globalThis.fetch = originalFetch
 })
 
 describe('/oauth/authorize', () => {

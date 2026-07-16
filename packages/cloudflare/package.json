@@ -4,6 +4,7 @@
   "module": "src/index.ts",
   "exports": {
     ".": "./src/index.ts",
+    "./linear-token-store": "./src/linear-token-store/index.ts",
     "./*": "./src/*"
   },
   "scripts": {

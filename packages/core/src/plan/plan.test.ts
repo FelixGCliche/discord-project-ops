@@ -3,13 +3,13 @@ import planValid from './fixtures/plan.valid.json'
 import planInvalid from './fixtures/plan.invalid.json'
 import { PlanSchema } from './schema'
 import { renderPlan } from './render'
-import { prettifyError } from 'zod'
+import { assertParseSuccess } from '../test-utils'
 
 describe('PlanSchema', () => {
   test('accepts a well-formed plan', () => {
     const result = PlanSchema.safeParse(planValid)
 
-    if (!result.success) throw new Error(prettifyError(result.error))
+    assertParseSuccess(result)
     expect(result.success).toBe(true)
   })
 

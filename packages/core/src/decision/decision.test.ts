@@ -3,13 +3,13 @@ import decisionValid from './fixtures/decision.valid.json'
 import decisionInvalid from './fixtures/decision.invalid.json'
 import { DecisionSchema } from './schema'
 import { renderDecision } from './render'
-import { prettifyError } from 'zod'
+import { assertParseSuccess } from '../test-utils'
 
 describe('DecisionSchema', () => {
   test('accepts a well-formed decision record', () => {
     const result = DecisionSchema.safeParse(decisionValid)
 
-    if (!result.success) throw new Error(prettifyError(result.error))
+    assertParseSuccess(result)
     expect(result.success).toBe(true)
   })
 

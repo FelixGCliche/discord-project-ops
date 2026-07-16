@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
-import { prettifyError } from 'zod'
 import { DecisionSchema, IssuesSchema, JSON_SCHEMAS, PlanSchema } from 'core'
+import { assertParseSuccess } from 'core/test-utils.ts'
 import decisionFixture from 'core/decision/fixtures/decision.valid.json'
 import messagesFixture from './fixtures/messages.valid.json'
 import planFixture from 'core/plan/fixtures/plan.valid.json'
@@ -56,7 +56,7 @@ describe.skipIf(!shouldRunLive)('opencode server: pipeline stage outputs (live)'
   test('summarizer output matches DecisionSchema', async () => {
     const output = await promptStage(server, 'summarizer', JSON_SCHEMAS.summarize, JSON.stringify(messagesFixture))
     const result = DecisionSchema.safeParse(output)
-    if (!result.success) throw new Error(prettifyError(result.error))
+    assertParseSuccess(result)
     expect(result.success).toBe(true)
   }, 60_000)
 
@@ -64,14 +64,14 @@ describe.skipIf(!shouldRunLive)('opencode server: pipeline stage outputs (live)'
     const inputText = `DECISION:\n${JSON.stringify(decisionFixture)}\n\nVAULT_CONTEXT:\n${VAULT_CONTEXT}`
     const output = await promptStage(server, 'planner', JSON_SCHEMAS.plan, inputText)
     const result = PlanSchema.safeParse(output)
-    if (!result.success) throw new Error(prettifyError(result.error))
+    assertParseSuccess(result)
     expect(result.success).toBe(true)
   }, 60_000)
 
   test('issue-generator output matches IssuesSchema', async () => {
     const output = await promptStage(server, 'issue-generator', JSON_SCHEMAS.issue, JSON.stringify(planFixture))
     const result = IssuesSchema.safeParse(output)
-    if (!result.success) throw new Error(prettifyError(result.error))
+    assertParseSuccess(result)
     expect(result.success).toBe(true)
   }, 60_000)
 })

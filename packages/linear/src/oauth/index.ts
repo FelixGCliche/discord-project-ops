@@ -29,7 +29,7 @@ export async function getAuthorizationUrl(env: LinearEnv): Promise<string> {
   return `${LINEAR_AUTHORIZE_URL}?${params.toString()}`
 }
 
-type FetchImpl = (input: string | URL, init?: RequestInit) => Promise<Response>
+export type FetchImpl = (input: string | URL, init?: RequestInit) => Promise<Response>
 
 async function requestToken(action: string, body: URLSearchParams, fetchImpl: FetchImpl): Promise<LinearTokenResponse> {
   const response = await fetchImpl(LINEAR_TOKEN_URL, {

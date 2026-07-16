@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import { verifySignedState } from 'core'
 import type { LinearEnv } from '../env'
 import { exchangeCodeForToken, getAuthorizationUrl, refreshAccessToken } from './index'
+import { buildLinearTokenResponse } from './oauth.fixtures'
 
 const ENV: LinearEnv = {
   LINEAR_OAUTH_CLIENT_ID: 'client-id',
@@ -36,13 +37,7 @@ describe('exchangeCodeForToken()', () => {
   })
 
   test('parses and returns a valid token response', async () => {
-    const payload = {
-      access_token: 'token-123',
-      token_type: 'Bearer',
-      scope: 'read,issues:create',
-      expires_in: 86399,
-      refresh_token: 'refresh-123',
-    }
+    const payload = buildLinearTokenResponse()
     const stubFetch = async () => Response.json(payload)
     const result = await exchangeCodeForToken(ENV, 'some-code', stubFetch)
     expect(result).toEqual(payload)
@@ -61,13 +56,7 @@ describe('refreshAccessToken()', () => {
   })
 
   test('parses and returns a valid token response', async () => {
-    const payload = {
-      access_token: 'token-456',
-      token_type: 'Bearer',
-      scope: 'read,issues:create',
-      expires_in: 86399,
-      refresh_token: 'refresh-456',
-    }
+    const payload = buildLinearTokenResponse({ access_token: 'token-456', refresh_token: 'refresh-456' })
     const stubFetch = async () => Response.json(payload)
     const result = await refreshAccessToken(ENV, 'refresh-123', stubFetch)
     expect(result).toEqual(payload)
@@ -82,13 +71,7 @@ describe('refreshAccessToken()', () => {
     let capturedBody: string | undefined
     const stubFetch = async (_url: string | URL, init?: RequestInit) => {
       capturedBody = init?.body?.toString()
-      return Response.json({
-        access_token: 'token-456',
-        token_type: 'Bearer',
-        scope: 'read,issues:create',
-        expires_in: 86399,
-        refresh_token: 'refresh-456',
-      })
+      return Response.json(buildLinearTokenResponse({ access_token: 'token-456', refresh_token: 'refresh-456' }))
     }
     await refreshAccessToken(ENV, 'refresh-123', stubFetch)
     const params = new URLSearchParams(capturedBody)
