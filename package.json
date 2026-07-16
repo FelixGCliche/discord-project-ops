@@ -13,7 +13,8 @@
     "fix:lint": "oxlint --fix",
     "fix:format": "oxfmt",
     "test:all": "bun test && bun -F opencode test:pipeline",
-    "secrets:push": "bun --env-file=packages/cloudflare/.env --env-file=apps/bot/.env --env-file=packages/linear/.env run apps/bot/src/provision-secrets/index.ts"
+    "secrets:push": "bun --env-file=packages/cloudflare/.env --env-file=apps/bot/.env --env-file=packages/linear/.env run apps/bot/src/provision-secrets/index.ts",
+    "secrets:push:staging": "bun --env-file=packages/cloudflare/.env --env-file=apps/bot/.env --env-file=packages/linear/.env run apps/bot/src/provision-secrets/index.ts staging"
   },
   "dependencies": {
     "zod": "^4.4.3"

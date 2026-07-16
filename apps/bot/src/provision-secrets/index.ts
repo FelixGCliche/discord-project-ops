@@ -2,8 +2,13 @@ import { join } from 'node:path'
 import { parseEnv } from 'core'
 import { botEnvSchema } from '../env'
 
-// Must match the `name` field in apps/bot/wrangler.jsonc
-const WORKER_SCRIPT_NAME = 'discord-project-ops'
+// Must match the `env.<name>.name` fields in apps/bot/wrangler.jsonc
+const ENV_TO_SCRIPT_NAME = {
+  production: 'discord-project-ops',
+  staging: 'discord-project-ops-staging',
+} as const
+
+type TargetEnv = keyof typeof ENV_TO_SCRIPT_NAME
 
 const BOT_DEV_VARS_PATH = join(import.meta.dir, '../../.dev.vars')
 
@@ -13,14 +18,24 @@ export function serializeDotenv(values: Record<string, string>): string {
     .join('\n')
 }
 
+function parseTargetEnv(arg: string | undefined): TargetEnv {
+  const targetEnv = arg ?? 'production'
+  if (!(targetEnv in ENV_TO_SCRIPT_NAME)) {
+    console.error(`Unknown environment "${targetEnv}". Expected one of: ${Object.keys(ENV_TO_SCRIPT_NAME).join(', ')}`)
+    process.exit(1)
+  }
+  return targetEnv as TargetEnv
+}
+
 async function putSecret(
   accountId: string,
   apiToken: string,
+  scriptName: string,
   name: string,
   text: string
 ): Promise<{ success: boolean; errorText?: string }> {
   const response = await fetch(
-    `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/${WORKER_SCRIPT_NAME}/secrets`,
+    `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/${scriptName}/secrets`,
     {
       method: 'PUT',
       headers: {
@@ -45,6 +60,9 @@ async function main() {
     process.exit(1)
   }
 
+  const targetEnv = parseTargetEnv(process.argv[2])
+  const scriptName = ENV_TO_SCRIPT_NAME[targetEnv]
+
   const secrets = parseEnv(botEnvSchema, process.env)
 
   await Bun.write(BOT_DEV_VARS_PATH, serializeDotenv(secrets))
@@ -52,7 +70,7 @@ async function main() {
 
   let failures = 0
   for (const [name, value] of Object.entries(secrets)) {
-    const result = await putSecret(accountId, apiToken, name, value)
+    const result = await putSecret(accountId, apiToken, scriptName, name, value)
     if (result.success) {
       console.log(`✔ pushed ${name}`)
     } else {
@@ -65,7 +83,7 @@ async function main() {
     console.error(`${failures} secret(s) failed to push`)
     process.exit(1)
   }
-  console.log(`Pushed ${Object.keys(secrets).length} secret(s) to ${WORKER_SCRIPT_NAME}`)
+  console.log(`Pushed ${Object.keys(secrets).length} secret(s) to ${scriptName}`)
 }
 
 if (import.meta.main) {
