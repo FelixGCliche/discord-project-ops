@@ -13,7 +13,6 @@ function createEnv(overrides: Partial<BotEnv> = {}) {
   const idFromName = mock(() => 'fake-id')
   const get = mock(() => stub)
   const env = {
-    BOT_ADMIN_TOKEN: 'admin-token',
     LINEAR_OAUTH_CLIENT_ID: 'client-id',
     LINEAR_OAUTH_CLIENT_SECRET: 'client-secret',
     LINEAR_OAUTH_REDIRECT_URI: 'https://example.com/oauth/callback',
@@ -44,16 +43,25 @@ describe('/oauth/authorize', () => {
     expect(response.status).toBe(401)
   })
 
-  test('returns 401 when the token query param does not match BOT_ADMIN_TOKEN', async () => {
+  test('returns 401 when the token query param is invalid or tampered', async () => {
     const { env } = createEnv()
-    const request = new Request('https://bot.example.com/oauth/authorize?token=wrong-token')
+    const request = new Request('https://bot.example.com/oauth/authorize?token=not-a-valid-token')
     const response = await authorizeHandler(request, env)
     expect(response.status).toBe(401)
   })
 
-  test('redirects to the Linear authorize URL when the token matches', async () => {
+  test('returns 401 when the token was signed with a different secret', async () => {
     const { env } = createEnv()
-    const request = new Request('https://bot.example.com/oauth/authorize?token=admin-token')
+    const token = await createSignedState('a-different-secret')
+    const request = new Request(`https://bot.example.com/oauth/authorize?token=${encodeURIComponent(token)}`)
+    const response = await authorizeHandler(request, env)
+    expect(response.status).toBe(401)
+  })
+
+  test('redirects to the Linear authorize URL when the token is valid', async () => {
+    const { env } = createEnv()
+    const token = await createSignedState(env.LINEAR_OAUTH_STATE_SECRET)
+    const request = new Request(`https://bot.example.com/oauth/authorize?token=${encodeURIComponent(token)}`)
     const response = await authorizeHandler(request, env)
     expect(response.status).toBe(302)
 
@@ -62,12 +70,12 @@ describe('/oauth/authorize', () => {
     expect(location.searchParams.get('client_id')).toBe(env.LINEAR_OAUTH_CLIENT_ID)
     expect(location.searchParams.get('redirect_uri')).toBe(env.LINEAR_OAUTH_REDIRECT_URI)
     expect(location.searchParams.get('response_type')).toBe('code')
-    expect(location.searchParams.get('state')).toBeTruthy()
+    expect(location.searchParams.get('state')).toBe(token)
   })
 
   test('rejects when the env is invalid', async () => {
-    const { env } = createEnv({ BOT_ADMIN_TOKEN: undefined as unknown as string })
-    const request = new Request('https://bot.example.com/oauth/authorize?token=admin-token')
+    const { env } = createEnv({ LINEAR_OAUTH_STATE_SECRET: undefined as unknown as string })
+    const request = new Request('https://bot.example.com/oauth/authorize?token=some-token')
     expect(authorizeHandler(request, env)).rejects.toThrow()
   })
 })
@@ -129,7 +137,7 @@ describe('/oauth/callback', () => {
   })
 
   test('rejects when the env is invalid', async () => {
-    const { env } = createEnv({ BOT_ADMIN_TOKEN: undefined as unknown as string })
+    const { env } = createEnv({ LINEAR_OAUTH_CLIENT_ID: undefined as unknown as string })
     const state = await createSignedState(env.LINEAR_OAUTH_STATE_SECRET)
     const request = new Request(
       `https://bot.example.com/oauth/callback?code=some-code&state=${encodeURIComponent(state)}`

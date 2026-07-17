@@ -1,19 +1,22 @@
 import { LinearClient, exchangeCodeForToken, getAuthorizationUrl, type FetchImpl } from 'linear'
 import { type RouteHandlers } from 'cloudflare'
-import { parseEnv, timingSafeEqual, verifySignedState } from 'core'
+import { parseEnv, verifySignedState } from 'core'
 import { botEnvSchema, type BotEnv } from '../env'
 
 export function createLinearOAuthHandler(fetchImpl: FetchImpl = fetch): RouteHandlers<BotEnv> {
   return {
-    // BOT_ADMIN_TOKEN travels as a query param here so this link can be shared/clicked directly;
-    // treat it like a bearer secret (it can end up in browser history or access logs).
+    // The token travels as a query param here so this link can be shared/clicked directly;
+    // treat it like a bearer secret (it can end up in browser history or access logs). It's a
+    // short-lived signed-state token minted out-of-band via `bun run generate-authorize-link`,
+    // not a static secret.
     '/oauth/authorize': async (request, env) => {
       parseEnv(botEnvSchema, env)
       const url = new URL(request.url)
-      if (!timingSafeEqual(url.searchParams.get('token') ?? '', env.BOT_ADMIN_TOKEN)) {
+      const token = url.searchParams.get('token') ?? ''
+      if (!(await verifySignedState(env.LINEAR_OAUTH_STATE_SECRET, token))) {
         return new Response('Unauthorized', { status: 401 })
       }
-      const authUrl = await getAuthorizationUrl(env)
+      const authUrl = getAuthorizationUrl(env, token)
       return Response.redirect(authUrl, 302)
     },
     '/oauth/callback': async (request, env) => {

@@ -1,5 +1,4 @@
 import { z } from 'zod'
-import { createSignedState } from 'core'
 import type { LinearEnv } from '../env'
 
 const LINEAR_AUTHORIZE_URL = 'https://linear.app/oauth/authorize'
@@ -16,8 +15,7 @@ const tokenResponseSchema = z.object({
 
 export type LinearTokenResponse = z.infer<typeof tokenResponseSchema>
 
-export async function getAuthorizationUrl(env: LinearEnv): Promise<string> {
-  const state = await createSignedState(env.LINEAR_OAUTH_STATE_SECRET)
+export function getAuthorizationUrl(env: LinearEnv, state: string): string {
   const params = new URLSearchParams({
     client_id: env.LINEAR_OAUTH_CLIENT_ID,
     redirect_uri: env.LINEAR_OAUTH_REDIRECT_URI,

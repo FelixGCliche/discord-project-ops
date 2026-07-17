@@ -1,5 +1,4 @@
 import { describe, expect, test } from 'bun:test'
-import { verifySignedState } from 'core'
 import type { LinearEnv } from '../env'
 import { exchangeCodeForToken, getAuthorizationUrl, refreshAccessToken } from './index'
 import { buildLinearTokenResponse } from './oauth.fixtures'
@@ -12,21 +11,14 @@ const ENV: LinearEnv = {
 }
 
 describe('getAuthorizationUrl()', () => {
-  test('builds the Linear authorize URL with the expected params', async () => {
-    const url = new URL(await getAuthorizationUrl(ENV))
+  test('builds the Linear authorize URL with the expected params', () => {
+    const url = new URL(getAuthorizationUrl(ENV, 'some-state'))
     expect(url.origin + url.pathname).toBe('https://linear.app/oauth/authorize')
     expect(url.searchParams.get('client_id')).toBe(ENV.LINEAR_OAUTH_CLIENT_ID)
     expect(url.searchParams.get('redirect_uri')).toBe(ENV.LINEAR_OAUTH_REDIRECT_URI)
     expect(url.searchParams.get('response_type')).toBe('code')
     expect(url.searchParams.get('scope')).toBe('read,issues:create')
-    expect(url.searchParams.get('state')).toBeTruthy()
-  })
-
-  test('generates a state that verifies successfully', async () => {
-    const url = new URL(await getAuthorizationUrl(ENV))
-    const state = url.searchParams.get('state')!
-    const isValid = await verifySignedState(ENV.LINEAR_OAUTH_STATE_SECRET, state)
-    expect(isValid).toBe(true)
+    expect(url.searchParams.get('state')).toBe('some-state')
   })
 })
 
