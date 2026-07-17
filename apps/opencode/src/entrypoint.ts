@@ -1,5 +1,5 @@
 import { createOpencodeServer } from '@opencode-ai/sdk'
-import { parseEnv } from 'core/src/env.ts'
+import { parseEnv } from 'core'
 import { opencodeEnvSchema } from './env.ts'
 import { buildConfig } from './agents/build-config.ts'
 

@@ -19,4 +19,30 @@
     },
   },
   "compatibility_flags": ["nodejs_compat"],
+  "durable_objects": {
+    "bindings": [{ "name": "LINEAR_TOKEN_STORE", "class_name": "LinearTokenStore" }],
+  },
+  // durable_objects/migrations are non-inheritable in Wrangler: any new migration entry
+  // must be added here AND in both env.staging and env.production below, identically.
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["LinearTokenStore"] }],
+  "env": {
+    "staging": {
+      // Separate script + Durable Object namespace from production, so PR builds can run a
+      // full `wrangler deploy` (migrations included) without touching live production data.
+      "name": "discord-project-ops-staging",
+      "durable_objects": {
+        "bindings": [{ "name": "LINEAR_TOKEN_STORE", "class_name": "LinearTokenStore" }],
+      },
+      "migrations": [{ "tag": "v1", "new_sqlite_classes": ["LinearTokenStore"] }],
+    },
+    "production": {
+      // Must match the top-level "name" above — this is what preserves continuity with the
+      // already-deployed Worker and its Durable Object storage/migration history.
+      "name": "discord-project-ops",
+      "durable_objects": {
+        "bindings": [{ "name": "LINEAR_TOKEN_STORE", "class_name": "LinearTokenStore" }],
+      },
+      "migrations": [{ "tag": "v1", "new_sqlite_classes": ["LinearTokenStore"] }],
+    },
+  },
 }

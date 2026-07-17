@@ -6,18 +6,22 @@
   ],
   "type": "module",
   "scripts": {
-    "check": "tsc --noEmit && oxlint && oxfmt",
-    "check:type": "tsc --noEmit",
+    "check": "bun run check:type && oxlint && oxfmt",
+    "check:type": "bun run --filter='*' check:type",
     "check:lint": "oxlint",
     "check:format": "oxfmt --check",
     "fix:lint": "oxlint --fix",
     "fix:format": "oxfmt",
-    "test:all": "bun test && bun -F opencode test:pipeline"
+    "test:all": "bun test && bun -F opencode test:pipeline",
+    "secrets:push": "bun --env-file=packages/cloudflare/.env --env-file=apps/bot/.env --env-file=packages/linear/.env run apps/bot/src/provision-secrets/index.ts",
+    "secrets:push:staging": "bun --env-file=packages/cloudflare/.env --env-file=apps/bot/.env --env-file=packages/linear/.env run apps/bot/src/provision-secrets/index.ts staging",
+    "generate-authorize-link": "bun --env-file=packages/linear/.env run apps/bot/src/generate-authorize-link/index.ts"
   },
   "dependencies": {
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4",
     "@types/bun": "latest",
     "oxfmt": "^0.56.0",
     "oxlint": "^1.71.0"

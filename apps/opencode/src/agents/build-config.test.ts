@@ -1,17 +1,15 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import type { AgentConfig } from '@opencode-ai/sdk'
-import { PROMPTS } from 'core/src/prompts.ts'
 import staticConfig from '../../opencode.json' with { type: 'json' }
 import { buildConfig, parseStaticAgents } from './build-config.ts'
 import { PERMISSION, TOOLS } from './agent-config-schema.ts'
+import { STAGE_AGENTS as STAGE_AGENT_INFO } from './build-agents.ts'
 import { connectTestServer, type TestServer } from './pipeline/server.ts'
 import { expectAllValuesToBe } from './test-utils.ts'
 
-const STAGE_AGENTS: ReadonlyArray<readonly [name: string, prompt: string]> = [
-  ['summarizer', PROMPTS.summarize],
-  ['planner', PROMPTS.plan],
-  ['issue-generator', PROMPTS.issue],
-]
+const STAGE_AGENTS: ReadonlyArray<readonly [name: string, prompt: string]> = Object.entries(STAGE_AGENT_INFO).map(
+  ([name, { prompt }]) => [name, prompt] as const
+)
 
 const NATIVE_AGENTS = Object.keys(staticConfig.agent).filter((name) => name !== 'pipeline')
 
@@ -60,14 +58,14 @@ describe('opencode server: pipeline agent wiring', () => {
 })
 
 describe('buildConfig()', () => {
+  const config = buildConfig()
+
   test('returns a config with agent entries', () => {
-    const config = buildConfig()
     expect(config.agent).toBeDefined()
     expect(Object.keys(config.agent ?? {}).length).toBeGreaterThan(0)
   })
 
   test('includes all static and pipeline agents', () => {
-    const config = buildConfig()
     expect(config.agent).toHaveProperty('pipeline')
     expect(config.agent).toHaveProperty('summarizer')
     expect(config.agent).toHaveProperty('planner')
@@ -75,7 +73,6 @@ describe('buildConfig()', () => {
   })
 
   test('static agent inherits deny-all baseline', () => {
-    const config = buildConfig()
     const pipeline = config.agent?.pipeline
     expect(pipeline).toBeDefined()
     expect(pipeline?.permission).toEqual(PERMISSION)

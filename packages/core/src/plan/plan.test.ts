@@ -3,13 +3,13 @@ import planValid from './fixtures/plan.valid.json'
 import planInvalid from './fixtures/plan.invalid.json'
 import { PlanSchema } from './schema'
 import { renderPlan } from './render'
-import { prettifyError } from 'zod'
+import { assertParseSuccess } from '../test-utils'
 
 describe('PlanSchema', () => {
   test('accepts a well-formed plan', () => {
     const result = PlanSchema.safeParse(planValid)
 
-    if (!result.success) throw new Error(prettifyError(result.error))
+    assertParseSuccess(result)
     expect(result.success).toBe(true)
   })
 
@@ -17,7 +17,7 @@ describe('PlanSchema', () => {
     const result = PlanSchema.safeParse(planInvalid.emptyWorkstreams)
     expect(result.success).toBe(false)
     if (!result.success) {
-      expect(result.error.issues.some((i: { path: any[] }) => i.path.join('.') === 'workstreams')).toBe(true)
+      expect(result.error.issues.some((i) => i.path.join('.') === 'workstreams')).toBe(true)
     }
   })
 
@@ -25,12 +25,12 @@ describe('PlanSchema', () => {
     const result = PlanSchema.safeParse(planInvalid.missingDecisionRef)
     expect(result.success).toBe(false)
     if (!result.success) {
-      expect(result.error.issues.some((i: { path: any[] }) => i.path.join('.') === 'decision_ref')).toBe(true)
+      expect(result.error.issues.some((i) => i.path.join('.') === 'decision_ref')).toBe(true)
     }
   })
 })
 
-describe('renderPlan', () => {
+describe('renderPlan()', () => {
   test('matches snapshot', () => {
     const plan = PlanSchema.parse(planValid)
     expect(renderPlan(plan)).toMatchSnapshot()

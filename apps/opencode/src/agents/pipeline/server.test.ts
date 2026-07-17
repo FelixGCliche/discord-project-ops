@@ -3,7 +3,7 @@ import { createOpencodeClient, createOpencodeServer } from '@opencode-ai/sdk'
 import { buildConfig } from '../build-config.ts'
 import { buildAuthHeaders, ensureOpencodeBinaryOnPath } from './server.ts'
 
-describe('buildAuthHeaders', () => {
+describe('buildAuthHeaders()', () => {
   test('returns undefined when no password is given', () => {
     expect(buildAuthHeaders('opencode', undefined)).toBeUndefined()
   })

@@ -3,12 +3,18 @@
   "type": "module",
   "module": "index.ts",
   "scripts": {
+    "dev": "wrangler dev",
     "check": "tsc --noEmit && oxlint && oxfmt",
     "check:type": "tsc --noEmit",
     "check:lint": "oxlint",
     "check:format": "oxfmt --check",
     "fix:lint": "oxlint --fix",
     "fix:format": "oxfmt"
+  },
+  "dependencies": {
+    "cloudflare": "workspace:*",
+    "core": "workspace:*",
+    "linear": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "latest",

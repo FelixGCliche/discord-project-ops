@@ -3,13 +3,13 @@ import issuesValid from './fixtures/issues.valid.json'
 import issuesInvalid from './fixtures/issues.invalid.json'
 import { IssuesSchema } from './schema'
 import { renderIssue, renderIssues } from './render'
-import { prettifyError } from 'zod'
+import { assertParseSuccess } from '../test-utils'
 
 describe('IssuesSchema', () => {
   test('accepts a well-formed issues list with valid depends_on references', () => {
     const result = IssuesSchema.safeParse(issuesValid)
 
-    if (!result.success) throw new Error(prettifyError(result.error))
+    assertParseSuccess(result)
     expect(result.success).toBe(true)
   })
 
@@ -44,7 +44,7 @@ describe('IssuesSchema', () => {
   })
 })
 
-describe('renderIssue / renderIssues', () => {
+describe('renderIssue() / renderIssues()', () => {
   test('renderIssue matches snapshot for a single issue', () => {
     const doc = IssuesSchema.parse(issuesValid)
     expect(renderIssue(doc.issues[0]!)).toMatchSnapshot()

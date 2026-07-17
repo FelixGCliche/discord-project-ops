@@ -3,13 +3,13 @@ import decisionValid from './fixtures/decision.valid.json'
 import decisionInvalid from './fixtures/decision.invalid.json'
 import { DecisionSchema } from './schema'
 import { renderDecision } from './render'
-import { prettifyError } from 'zod'
+import { assertParseSuccess } from '../test-utils'
 
 describe('DecisionSchema', () => {
   test('accepts a well-formed decision record', () => {
     const result = DecisionSchema.safeParse(decisionValid)
 
-    if (!result.success) throw new Error(prettifyError(result.error))
+    assertParseSuccess(result)
     expect(result.success).toBe(true)
   })
 
@@ -17,7 +17,7 @@ describe('DecisionSchema', () => {
     const result = DecisionSchema.safeParse(decisionInvalid.missingTitle)
     expect(result.success).toBe(false)
     if (!result.success) {
-      expect(result.error.issues.some((i: { path: any[] }) => i.path.join('.') === 'title')).toBe(true)
+      expect(result.error.issues.some((i) => i.path.join('.') === 'title')).toBe(true)
     }
   })
 
@@ -27,7 +27,7 @@ describe('DecisionSchema', () => {
   })
 })
 
-describe('renderDecision', () => {
+describe('renderDecision()', () => {
   test('matches snapshot', () => {
     const decision = DecisionSchema.parse(decisionValid)
     expect(renderDecision(decision)).toMatchSnapshot()
