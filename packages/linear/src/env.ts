@@ -1,4 +1,7 @@
+import { join } from 'node:path'
 import { z } from 'zod'
+
+export const ENV_FILE_PATH = join(import.meta.dir, '..', '.env')
 
 export const linearEnvSchema = z.object({
   LINEAR_OAUTH_CLIENT_ID: z.string().min(1),

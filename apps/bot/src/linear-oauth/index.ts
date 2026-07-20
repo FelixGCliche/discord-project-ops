@@ -7,7 +7,7 @@ export function createLinearOAuthHandler(fetchImpl: FetchImpl = fetch): RouteHan
   return {
     // The token travels as a query param here so this link can be shared/clicked directly;
     // treat it like a bearer secret (it can end up in browser history or access logs). It's a
-    // short-lived signed-state token minted out-of-band via `bun run generate-authorize-link`,
+    // short-lived signed-state token minted out-of-band via `bun run auth:linear`,
     // not a static secret.
     '/oauth/authorize': async (request, env) => {
       parseEnv(botEnvSchema, env)
