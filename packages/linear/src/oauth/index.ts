@@ -3,7 +3,7 @@ import type { LinearEnv } from '../env'
 
 const LINEAR_AUTHORIZE_URL = 'https://linear.app/oauth/authorize'
 const LINEAR_TOKEN_URL = 'https://api.linear.app/oauth/token'
-const DEFAULT_SCOPES = 'read,issues:create'
+const DEFAULT_SCOPES = 'read,write'
 
 const tokenResponseSchema = z.object({
   access_token: z.string().min(1),

@@ -19,6 +19,17 @@ class FakeLinearClient {
   }
 }
 
+// Mirrors @linear/sdk's IssueRelationType string enum. Any other named export the codebase
+// starts importing from '@linear/sdk' needs to be added here too, since this factory replaces
+// the module's entire export surface for the whole test run.
+const FakeIssueRelationType = {
+  Blocks: 'blocks',
+  Duplicate: 'duplicate',
+  Related: 'related',
+  Similar: 'similar',
+} as const
+
 mock.module('@linear/sdk', () => ({
   LinearClient: FakeLinearClient,
+  IssueRelationType: FakeIssueRelationType,
 }))

@@ -119,7 +119,7 @@ describe('/oauth/callback', () => {
     expect(body.get('grant_type')).toBe('authorization_code')
     expect(idFromName).toHaveBeenCalledWith('linear-token-store')
     expect(get).toHaveBeenCalled()
-    expect(storeAuth).toHaveBeenCalledWith('token-123', 'refresh-123', 86399, 'Acme Inc', ['read', 'issues:create'])
+    expect(storeAuth).toHaveBeenCalledWith('token-123', 'refresh-123', 86399, 'Acme Inc', ['read', 'write'])
     expect(response.status).toBe(200)
     expect(await response.text()).toContain('Linear connected successfully')
   })
