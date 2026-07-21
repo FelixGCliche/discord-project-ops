@@ -3,7 +3,10 @@ import type { LinearEnv } from '../env'
 
 const LINEAR_AUTHORIZE_URL = 'https://linear.app/oauth/authorize'
 const LINEAR_TOKEN_URL = 'https://api.linear.app/oauth/token'
-const DEFAULT_SCOPES = 'read,issues:create'
+// 'write' (not the narrower 'issues:create') is required because issue creation also creates
+// labels and issue-relation links via createIssueLabel/createIssueRelation, which issues:create
+// alone doesn't cover.
+const DEFAULT_SCOPES = 'read,write'
 
 const tokenResponseSchema = z.object({
   access_token: z.string().min(1),

@@ -7,3 +7,14 @@ export {
   type LinearTokenResponse,
   type FetchImpl,
 } from './oauth'
+export {
+  createLinearIssue,
+  createLinearIssueRelation,
+  createLinearIssueBatch,
+  LinearIssueCreationError,
+  LinearTeamNotFoundError,
+  type CreateLinearIssueParams,
+  type CreatedLinearIssue,
+} from './create-issues'
+export { resolveLinearTeam } from './create-issues/resolve-team'
+export { resolveLinearLabels } from './create-issues/resolve-labels'

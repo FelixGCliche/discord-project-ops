@@ -28,6 +28,16 @@ describe('IssuesSchema', () => {
     }
   })
 
+  test('rejects two issues sharing the same title', () => {
+    const result = IssuesSchema.safeParse(issuesInvalid.duplicateTitle)
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      expect(
+        result.error.issues.some((i: { message: string | string[] }) => i.message.includes('duplicate issue title'))
+      ).toBe(true)
+    }
+  })
+
   test('rejects an issue that depends on itself', () => {
     const result = IssuesSchema.safeParse(issuesInvalid.selfDependency)
     expect(result.success).toBe(false)

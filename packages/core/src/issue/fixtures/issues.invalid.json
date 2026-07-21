@@ -38,6 +38,26 @@
       }
     ]
   },
+  "duplicateTitle": {
+    "post_id": "post_123",
+    "plan_ref": "plans/post_123.md",
+    "issues": [
+      {
+        "title": "Add weight column to item table",
+        "description": "Add a weight column.",
+        "labels": [],
+        "estimate": "2",
+        "depends_on": []
+      },
+      {
+        "title": "Add weight column to item table",
+        "description": "Duplicate title of the issue above.",
+        "labels": [],
+        "estimate": "1",
+        "depends_on": []
+      }
+    ]
+  },
   "badEstimateEnum": {
     "post_id": "post_123",
     "plan_ref": "plans/post_123.md",

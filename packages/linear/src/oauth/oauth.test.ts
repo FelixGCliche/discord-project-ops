@@ -17,7 +17,7 @@ describe('getAuthorizationUrl()', () => {
     expect(url.searchParams.get('client_id')).toBe(ENV.LINEAR_OAUTH_CLIENT_ID)
     expect(url.searchParams.get('redirect_uri')).toBe(ENV.LINEAR_OAUTH_REDIRECT_URI)
     expect(url.searchParams.get('response_type')).toBe('code')
-    expect(url.searchParams.get('scope')).toBe('read,issues:create')
+    expect(url.searchParams.get('scope')).toBe('read,write')
     expect(url.searchParams.get('state')).toBe('some-state')
   })
 })

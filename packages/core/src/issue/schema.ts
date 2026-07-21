@@ -16,7 +16,17 @@ export const IssuesSchema = z
   })
   .superRefine((doc, ctx) => {
     const titles = new Set(doc.issues.map((i) => i.title))
+    const seenTitles = new Map<string, number>()
     doc.issues.forEach((issue, issueIndex) => {
+      if (seenTitles.has(issue.title)) {
+        ctx.addIssue({
+          code: 'custom',
+          message: `duplicate issue title: "${issue.title}"`,
+          path: ['issues', issueIndex, 'title'],
+        })
+      } else {
+        seenTitles.set(issue.title, issueIndex)
+      }
       issue.depends_on.forEach((dep, depIndex) => {
         if (!titles.has(dep)) {
           ctx.addIssue({
