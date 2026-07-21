@@ -16,8 +16,14 @@ describe('findDisallowedFiles', () => {
     ).toEqual([])
   })
 
+  test('allows the entrypoint re-export and package export map the migration needs', () => {
+    expect(
+      findDisallowedFiles(['apps/bot/wrangler.jsonc', 'apps/bot/src/index.ts', 'packages/cloudflare/package.json'])
+    ).toEqual([])
+  })
+
   test('flags unrelated files outside the allowlist', () => {
-    expect(findDisallowedFiles(['apps/bot/wrangler.jsonc', 'apps/bot/src/index.ts'])).toEqual(['apps/bot/src/index.ts'])
+    expect(findDisallowedFiles(['apps/bot/wrangler.jsonc', 'apps/bot/src/env.ts'])).toEqual(['apps/bot/src/env.ts'])
   })
 
   test('flags files even when no wrangler.jsonc change is present in the list', () => {
