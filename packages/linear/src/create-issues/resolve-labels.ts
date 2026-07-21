@@ -1,13 +1,29 @@
 import type { LinearClient } from '@linear/sdk'
 
-export async function resolveLinearLabels(client: LinearClient, teamId: string, names: string[]): Promise<string[]> {
+export type LinearLabelCacheEntry = { id: string; name: string; teamId?: string }
+export type LinearLabelCache = { entries?: LinearLabelCacheEntry[] }
+
+export async function resolveLinearLabels(
+  client: LinearClient,
+  teamId: string,
+  names: string[],
+  cache?: LinearLabelCache
+): Promise<string[]> {
   if (names.length === 0) {
     return []
   }
 
-  const existing = await client.issueLabels()
+  let entries = cache?.entries
+  if (!entries) {
+    const existing = await client.issueLabels()
+    entries = existing.nodes.map((label) => ({ id: label.id, name: label.name, teamId: label.teamId ?? undefined }))
+    if (cache) {
+      cache.entries = entries
+    }
+  }
+
   const byName = new Map(
-    existing.nodes
+    entries
       .filter((label) => label.teamId === teamId || label.teamId === undefined)
       .map((label) => [label.name.toLowerCase(), label.id])
   )
@@ -25,6 +41,7 @@ export async function resolveLinearLabels(client: LinearClient, teamId: string, 
     }
     labelIds.push(payload.issueLabelId)
     byName.set(name.toLowerCase(), payload.issueLabelId)
+    entries.push({ id: payload.issueLabelId, name, teamId })
   }
 
   return labelIds

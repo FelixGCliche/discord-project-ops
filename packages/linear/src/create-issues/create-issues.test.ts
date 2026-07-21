@@ -129,6 +129,14 @@ describe('createLinearIssue()', () => {
 
     await expect(createLinearIssue(client, { issue })).rejects.toThrow(LinearIssueCreationError)
   })
+
+  test('wraps a failed label resolution in LinearIssueCreationError', async () => {
+    const client = buildClient()
+    client.createIssueLabel = mock(async () => ({ issueLabelId: undefined }) as unknown as IssueLabelPayload)
+    const issue = buildIssue({ labels: ['new-label'] })
+
+    await expect(createLinearIssue(client, { issue })).rejects.toThrow(LinearIssueCreationError)
+  })
 })
 
 describe('createLinearIssueBatch()', () => {
@@ -149,5 +157,25 @@ describe('createLinearIssueBatch()', () => {
     expect(results).toHaveLength(3)
     expect(results.every((result) => result.unresolvedDependencies.length === 0)).toBe(true)
     expect(client.createIssueRelation).toHaveBeenCalledTimes(2)
+  })
+
+  test('fetches teams and labels at most once across a multi-issue batch', async () => {
+    const client = buildClient({ labels: [{ id: 'label-design', name: 'Design', teamId: 'team-eng' }] })
+    const doc: Issues = {
+      post_id: 'post_123',
+      plan_ref: 'plans/post_123.md',
+      issues: [
+        buildIssue({ title: 'Issue A', labels: ['design'] }),
+        buildIssue({ title: 'Issue B', labels: ['design', 'new-label'] }),
+        buildIssue({ title: 'Issue C', labels: ['new-label'] }),
+      ],
+    }
+
+    await createLinearIssueBatch(client, doc)
+
+    expect(client.teams).toHaveBeenCalledTimes(1)
+    expect(client.issueLabels).toHaveBeenCalledTimes(1)
+    expect(client.createIssueLabel).toHaveBeenCalledTimes(1)
+    expect(client.createIssueLabel).toHaveBeenCalledWith({ name: 'new-label', teamId: 'team-eng' })
   })
 })
