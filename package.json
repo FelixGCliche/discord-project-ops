@@ -13,9 +13,11 @@
     "fix:lint": "oxlint --fix",
     "fix:format": "oxfmt",
     "test:all": "bun test && bun -F opencode test:pipeline",
-    "secrets:push": "bun --env-file=packages/cloudflare/.env --env-file=apps/bot/.env --env-file=packages/linear/.env run apps/bot/src/provision-secrets/index.ts",
-    "secrets:push:staging": "bun --env-file=packages/cloudflare/.env --env-file=apps/bot/.env --env-file=packages/linear/.env run apps/bot/src/provision-secrets/index.ts staging",
-    "generate-authorize-link": "bun --env-file=packages/linear/.env run apps/bot/src/generate-authorize-link/index.ts"
+    "secrets:push": "bun run apps/bot/src/secrets/provision.ts",
+    "secrets:push:staging": "bun run apps/bot/src/secrets/provision.ts staging",
+    "secrets:validate": "bun run apps/bot/src/secrets/validate.ts",
+    "secrets:validate:staging": "bun run apps/bot/src/secrets/validate.ts staging",
+    "auth:linear": "bun --env-file=packages/linear/.env run apps/bot/src/linear-oauth/generate-authorize-link/index.ts"
   },
   "dependencies": {
     "zod": "^4.4.3"

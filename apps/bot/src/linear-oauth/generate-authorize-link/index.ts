@@ -1,5 +1,5 @@
 import { createSignedState, parseEnv } from 'core'
-import { botEnvSchema } from '../env'
+import { botEnvSchema } from '../../env'
 
 export function buildAuthorizeUrl(redirectUri: string, token: string): string {
   const url = new URL('/oauth/authorize', redirectUri)
