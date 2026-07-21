@@ -1,6 +1,6 @@
 import { join } from 'node:path'
 import { parseEnv } from 'core'
-import { envFilePaths, putSecret, requireCloudflareCredentials } from 'cloudflare'
+import { getEnvFilePaths, putSecret, requireCloudflareCredentials } from 'cloudflare'
 import { botEnvSchema } from '../env'
 import { loadEnvFiles } from './load-env-files'
 import { parseTargetEnv, ENV_TO_SCRIPT_NAME } from './target-env'
@@ -14,7 +14,7 @@ export function serializeDotenv(values: Record<string, string>): string {
 }
 
 async function main() {
-  await loadEnvFiles(envFilePaths)
+  await loadEnvFiles(getEnvFilePaths())
 
   const credentials = requireCloudflareCredentials()
 

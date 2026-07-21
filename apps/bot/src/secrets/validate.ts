@@ -1,4 +1,4 @@
-import { envFilePaths, listSecrets, requireCloudflareCredentials } from 'cloudflare'
+import { getEnvFilePaths, listSecrets, requireCloudflareCredentials } from 'cloudflare'
 import { botEnvSchema } from '../env'
 import { loadEnvFiles } from './load-env-files'
 import { parseTargetEnv, ENV_TO_SCRIPT_NAME } from './target-env'
@@ -14,7 +14,7 @@ export function diffSecrets(
 }
 
 async function main() {
-  await loadEnvFiles(envFilePaths)
+  await loadEnvFiles(getEnvFilePaths())
 
   const credentials = requireCloudflareCredentials()
 

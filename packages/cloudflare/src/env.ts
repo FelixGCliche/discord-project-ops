@@ -1,11 +1,11 @@
 import { join } from 'node:path'
 import { z } from 'zod'
-import { linearEnvSchema, ENV_FILE_PATH as linearEnvFilePath } from 'linear'
+import { linearEnvSchema, getEnvFilePath as getLinearEnvFilePath } from 'linear'
 import type { LinearTokenStore } from './linear-token-store'
 
-const cloudflareEnvFilePath = join(import.meta.dir, '..', '.env')
-
-export const envFilePaths = [cloudflareEnvFilePath, linearEnvFilePath]
+export function getEnvFilePaths(): string[] {
+  return [join(import.meta.dir, '..', '.env'), getLinearEnvFilePath()]
+}
 
 export const workerEnvSchema = z.object({
   ...linearEnvSchema.shape,

@@ -3,7 +3,7 @@
 // would make this barrel unimportable from Bun (tests, scripts). The worker entrypoint
 // imports it from the 'cloudflare/linear-token-store' export instead.
 export type { AuthState } from './linear-token-store'
-export { envFilePaths, workerEnvSchema, type WorkerEnv } from './env'
+export { getEnvFilePaths, workerEnvSchema, type WorkerEnv } from './env'
 export { createWorkerFetch } from './worker'
 export type { RouteHandlers } from './worker'
 export {
