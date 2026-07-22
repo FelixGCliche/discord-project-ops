@@ -47,8 +47,8 @@ export function createGithubOAuthHandler(fetchImpl: FetchImpl = fetch): RouteHan
       await stub.storeAuth(
         token.access_token,
         token.refresh_token ?? '',
-        token.expires_in ?? 0,
-        token.refresh_token_expires_in ?? 0,
+        token.expires_in ?? null,
+        token.refresh_token_expires_in ?? null,
         login,
         token.scope.split(',').filter(Boolean)
       )
@@ -62,9 +62,25 @@ export function createGithubOAuthHandler(fetchImpl: FetchImpl = fetch): RouteHan
     // installations, so requiring installation_id to appear in that list is both a
     // correctness check and closes the hole where an unauthenticated caller could otherwise
     // overwrite the single global GithubInstallationStore with an arbitrary/unverified id.
+    // On top of that, this endpoint requires a signed `state` param minted by
+    // `bun run github:install` (a human-run script, mirroring `bun run oauth:github`), tying
+    // the install/reconfigure action back to a specific admin-initiated request — same
+    // mechanism as the OAuth authorize/callback routes above. One consequence: reconfiguring
+    // the App directly from GitHub's own settings UI (not via the generated link) will get
+    // rejected here — the underlying GitHub-side install/update still succeeds, only this
+    // endpoint's bookkeeping doesn't run. That's an accepted tradeoff for a single-owner
+    // App with a controlled operational workflow.
     '/github/install': async (request, env) => {
       parseEnv(botEnvSchema, env)
       const url = new URL(request.url)
+      const state = url.searchParams.get('state')
+      if (!state) {
+        return new Response('Missing state', { status: 400 })
+      }
+      if (!(await verifySignedState(env.GITHUB_OAUTH_STATE_SECRET, state))) {
+        return new Response('Invalid or expired state', { status: 400 })
+      }
+
       const installationId = url.searchParams.get('installation_id')
       if (!installationId) {
         return new Response('Missing installation_id', { status: 400 })

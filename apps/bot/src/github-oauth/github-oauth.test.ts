@@ -154,6 +154,29 @@ describe('/github/oauth/callback', () => {
     expect(await response.text()).toContain('GitHub connected successfully')
   })
 
+  test('stores null expiry values when GitHub does not return expires_in / refresh_token_expires_in', async () => {
+    const { env, storeAuth } = createEnv()
+    fetchMock.mockImplementation(async (input: string | URL) => {
+      const url = input.toString()
+      if (url === GITHUB_TOKEN_URL) {
+        return Response.json(buildGithubTokenResponse({ expires_in: undefined, refresh_token_expires_in: undefined }))
+      }
+      if (url === GITHUB_USER_URL) {
+        return Response.json({ login: 'octocat' })
+      }
+      throw new Error(`Unexpected fetch call: ${url}`)
+    })
+    const state = await createSignedState(env.GITHUB_OAUTH_STATE_SECRET)
+    const request = new Request(
+      `https://bot.example.com/github/oauth/callback?code=some-code&state=${encodeURIComponent(state)}`
+    )
+
+    const response = await callbackHandler(request, env)
+
+    expect(storeAuth).toHaveBeenCalledWith('token-123', 'refresh-123', null, null, 'octocat', [])
+    expect(response.status).toBe(200)
+  })
+
   test('rejects and never stores auth when the token exchange fails', async () => {
     const { env, storeAuth } = createEnv()
     fetchMock.mockImplementation(async () => new Response('error', { status: 401 }))
@@ -177,16 +200,48 @@ describe('/github/oauth/callback', () => {
 })
 
 describe('/github/install', () => {
+  test('returns 400 when state is missing', async () => {
+    const { env } = createEnv()
+    const request = new Request('https://bot.example.com/github/install?installation_id=12345&setup_action=install')
+    const response = await installHandler(request, env)
+    expect(response.status).toBe(400)
+  })
+
+  test('returns 400 when state is invalid or tampered', async () => {
+    const { env } = createEnv()
+    const request = new Request(
+      'https://bot.example.com/github/install?installation_id=12345&setup_action=install&state=not-a-valid-state'
+    )
+    const response = await installHandler(request, env)
+    expect(response.status).toBe(400)
+  })
+
+  test('returns 400 when state was signed with a different secret', async () => {
+    const { env } = createEnv()
+    const state = await createSignedState('a-different-secret')
+    const request = new Request(
+      `https://bot.example.com/github/install?installation_id=12345&setup_action=install&state=${encodeURIComponent(state)}`
+    )
+    const response = await installHandler(request, env)
+    expect(response.status).toBe(400)
+  })
+
   test('returns 400 when installation_id is missing', async () => {
     const { env } = createEnv()
-    const request = new Request('https://bot.example.com/github/install?setup_action=install')
+    const state = await createSignedState(env.GITHUB_OAUTH_STATE_SECRET)
+    const request = new Request(
+      `https://bot.example.com/github/install?setup_action=install&state=${encodeURIComponent(state)}`
+    )
     const response = await installHandler(request, env)
     expect(response.status).toBe(400)
   })
 
   test('resolves the account login and stores the installation on a valid request', async () => {
     const { env, storeInstallation, installationIdFromName, installationGet } = createEnv()
-    const request = new Request('https://bot.example.com/github/install?installation_id=12345&setup_action=install')
+    const state = await createSignedState(env.GITHUB_OAUTH_STATE_SECRET)
+    const request = new Request(
+      `https://bot.example.com/github/install?installation_id=12345&setup_action=install&state=${encodeURIComponent(state)}`
+    )
 
     const response = await installHandler(request, env)
 
@@ -199,7 +254,10 @@ describe('/github/install', () => {
 
   test('returns 404 and never stores the installation when no matching installation is found', async () => {
     const { env, storeInstallation } = createEnv()
-    const request = new Request('https://bot.example.com/github/install?installation_id=99999&setup_action=install')
+    const state = await createSignedState(env.GITHUB_OAUTH_STATE_SECRET)
+    const request = new Request(
+      `https://bot.example.com/github/install?installation_id=99999&setup_action=install&state=${encodeURIComponent(state)}`
+    )
 
     const response = await installHandler(request, env)
 
@@ -209,7 +267,10 @@ describe('/github/install', () => {
 
   test('rejects when the env is invalid', async () => {
     const { env } = createEnv({ GITHUB_APP_ID: undefined as unknown as string })
-    const request = new Request('https://bot.example.com/github/install?installation_id=12345')
+    const state = await createSignedState(env.GITHUB_OAUTH_STATE_SECRET)
+    const request = new Request(
+      `https://bot.example.com/github/install?installation_id=12345&state=${encodeURIComponent(state)}`
+    )
     expect(installHandler(request, env)).rejects.toThrow()
   })
 })

@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { createOAuthClient, type FetchImpl } from 'core'
 import type { GithubEnv } from '../env'
 
 const GITHUB_AUTHORIZE_URL = 'https://github.com/login/oauth/authorize'
@@ -36,45 +37,27 @@ export function getAuthorizationUrl(env: GithubEnv, state: string): string {
   return `${GITHUB_AUTHORIZE_URL}?${params.toString()}`
 }
 
-export type FetchImpl = (input: string | URL, init?: RequestInit) => Promise<Response>
+export type { FetchImpl } from 'core'
 
-async function requestToken(action: string, body: URLSearchParams, fetchImpl: FetchImpl): Promise<GithubTokenResponse> {
-  const response = await fetchImpl(GITHUB_TOKEN_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      Accept: 'application/json',
-    },
-    body,
-  })
-  if (!response.ok) {
-    throw new Error(`GitHub token ${action} failed: ${response.status}`)
-  }
-  const json = await response.json()
-  // GitHub's token endpoint returns HTTP 200 even on failure, with `{ error,
-  // error_description }` in the body, so this must be checked before schema validation.
-  const errorParse = tokenErrorSchema.safeParse(json)
-  if (errorParse.success) {
-    const { error, error_description } = errorParse.data
-    throw new Error(`GitHub token ${action} failed: ${error}${error_description ? ' - ' + error_description : ''}`)
-  }
-  return tokenResponseSchema.parse(json)
-}
+const client = createOAuthClient<GithubTokenResponse>({
+  provider: 'GitHub',
+  tokenUrl: GITHUB_TOKEN_URL,
+  tokenResponseSchema,
+  errorBodySchema: tokenErrorSchema,
+})
 
 export async function exchangeCodeForToken(
   env: GithubEnv,
   code: string,
   fetchImpl: FetchImpl = fetch
 ): Promise<GithubTokenResponse> {
-  return requestToken(
-    'exchange',
-    new URLSearchParams({
+  return client.exchangeCodeForToken(
+    {
       client_id: env.GITHUB_OAUTH_CLIENT_ID,
       client_secret: env.GITHUB_OAUTH_CLIENT_SECRET,
       redirect_uri: env.GITHUB_OAUTH_REDIRECT_URI,
       code,
-      grant_type: 'authorization_code',
-    }),
+    },
     fetchImpl
   )
 }
@@ -84,14 +67,12 @@ export async function refreshAccessToken(
   refreshToken: string,
   fetchImpl: FetchImpl = fetch
 ): Promise<GithubTokenResponse> {
-  return requestToken(
-    'refresh',
-    new URLSearchParams({
+  return client.refreshAccessToken(
+    {
       client_id: env.GITHUB_OAUTH_CLIENT_ID,
       client_secret: env.GITHUB_OAUTH_CLIENT_SECRET,
       refresh_token: refreshToken,
-      grant_type: 'refresh_token',
-    }),
+    },
     fetchImpl
   )
 }
