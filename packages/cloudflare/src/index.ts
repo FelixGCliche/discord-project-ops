@@ -3,6 +3,7 @@
 // would make this barrel unimportable from Bun (tests, scripts). The worker entrypoint
 // imports it from the 'cloudflare/linear-token-store' export instead.
 export type { AuthState } from './linear-token-store'
+export type { AuthState as GithubAuthState } from './github-token-store'
 export { getEnvFilePaths, workerEnvSchema, type WorkerEnv } from './env'
 export { createWorkerFetch } from './worker'
 export type { RouteHandlers } from './worker'
@@ -13,3 +14,4 @@ export {
   type CloudflareCredentials,
   type SecretMeta,
 } from './secrets-api'
+export { requireWorkersSubdomain, getWorkerUrl } from './worker-url'

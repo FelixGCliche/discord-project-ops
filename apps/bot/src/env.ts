@@ -5,4 +5,5 @@ export const botEnvSchema = z.object({
   ...workerEnvSchema.shape,
 })
 
-export type BotEnv = z.infer<typeof botEnvSchema> & Pick<WorkerEnv, 'LINEAR_TOKEN_STORE'>
+export type BotEnv = z.infer<typeof botEnvSchema> &
+  Pick<WorkerEnv, 'LINEAR_TOKEN_STORE' | 'GITHUB_TOKEN_STORE' | 'GITHUB_INSTALLATION_STORE'>

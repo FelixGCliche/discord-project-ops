@@ -1,6 +1,6 @@
 const DEFAULT_MAX_AGE_MS = 10 * 60 * 1000
 
-function toBase64Url(buffer: ArrayBuffer): string {
+export function toBase64Url(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer)
   let binary = ''
   for (const byte of bytes) binary += String.fromCharCode(byte)
