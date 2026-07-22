@@ -23,6 +23,7 @@
     "bindings": [
       { "name": "LINEAR_TOKEN_STORE", "class_name": "LinearTokenStore" },
       { "name": "GITHUB_TOKEN_STORE", "class_name": "GithubTokenStore" },
+      { "name": "GITHUB_INSTALLATION_STORE", "class_name": "GithubInstallationStore" },
     ],
   },
   // durable_objects/migrations are non-inheritable in Wrangler: any new migration entry
@@ -30,6 +31,7 @@
   "migrations": [
     { "tag": "v1", "new_sqlite_classes": ["LinearTokenStore"] },
     { "tag": "v2", "new_sqlite_classes": ["GithubTokenStore"] },
+    { "tag": "v3", "new_sqlite_classes": ["GithubInstallationStore"] },
   ],
   "env": {
     "staging": {
@@ -40,11 +42,13 @@
         "bindings": [
           { "name": "LINEAR_TOKEN_STORE", "class_name": "LinearTokenStore" },
           { "name": "GITHUB_TOKEN_STORE", "class_name": "GithubTokenStore" },
+          { "name": "GITHUB_INSTALLATION_STORE", "class_name": "GithubInstallationStore" },
         ],
       },
       "migrations": [
         { "tag": "v1", "new_sqlite_classes": ["LinearTokenStore"] },
         { "tag": "v2", "new_sqlite_classes": ["GithubTokenStore"] },
+        { "tag": "v3", "new_sqlite_classes": ["GithubInstallationStore"] },
       ],
     },
     "production": {
@@ -55,11 +59,13 @@
         "bindings": [
           { "name": "LINEAR_TOKEN_STORE", "class_name": "LinearTokenStore" },
           { "name": "GITHUB_TOKEN_STORE", "class_name": "GithubTokenStore" },
+          { "name": "GITHUB_INSTALLATION_STORE", "class_name": "GithubInstallationStore" },
         ],
       },
       "migrations": [
         { "tag": "v1", "new_sqlite_classes": ["LinearTokenStore"] },
         { "tag": "v2", "new_sqlite_classes": ["GithubTokenStore"] },
+        { "tag": "v3", "new_sqlite_classes": ["GithubInstallationStore"] },
       ],
     },
   },
