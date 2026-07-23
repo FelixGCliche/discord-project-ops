@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { HttpError } from 'core'
 import type { GithubEnv } from '../env'
 import { exchangeCodeForToken, fetchAuthenticatedLogin, getAuthorizationUrl, refreshAccessToken } from './index'
 import { buildGithubTokenResponse } from './oauth.fixtures'
@@ -113,10 +114,22 @@ describe('fetchAuthenticatedLogin()', () => {
     await fetchAuthenticatedLogin('access-token', stubFetch)
     expect(capturedHeaders?.get('Authorization')).toBe('Bearer access-token')
     expect(capturedHeaders?.get('Accept')).toBe('application/vnd.github+json')
+    expect(capturedHeaders?.get('User-Agent')).toBe('discord-project-ops')
   })
 
   test('throws when the response is not ok', async () => {
     const stubFetch = async () => new Response('error', { status: 401 })
     await expect(fetchAuthenticatedLogin('access-token', stubFetch)).rejects.toThrow('GitHub user lookup failed: 401')
+  })
+
+  test('throws an HttpError with status 502 when the response is not ok', async () => {
+    const stubFetch = async () => new Response('error', { status: 401 })
+    expect.assertions(2)
+    try {
+      await fetchAuthenticatedLogin('access-token', stubFetch)
+    } catch (error) {
+      expect(error).toBeInstanceOf(HttpError)
+      expect((error as HttpError).status).toBe(502)
+    }
   })
 })

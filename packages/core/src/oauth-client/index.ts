@@ -1,4 +1,5 @@
 import type { z } from 'zod'
+import { HttpError } from '../http-error'
 
 export type FetchImpl = (input: string | URL, init?: RequestInit) => Promise<Response>
 
@@ -35,14 +36,15 @@ export function createOAuthClient<TTokenResponse>(
       body,
     })
     if (!response.ok) {
-      throw new Error(`${config.provider} token ${action} failed: ${response.status}`)
+      throw new HttpError(502, `${config.provider} token ${action} failed: ${response.status}`)
     }
     const json = await response.json()
     if (config.errorBodySchema) {
       const errorParse = config.errorBodySchema.safeParse(json)
       if (errorParse.success) {
         const { error, error_description } = errorParse.data
-        throw new Error(
+        throw new HttpError(
+          400,
           `${config.provider} token ${action} failed: ${error}${error_description ? ' - ' + error_description : ''}`
         )
       }

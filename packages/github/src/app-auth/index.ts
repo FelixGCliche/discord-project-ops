@@ -1,5 +1,6 @@
 import { importPKCS8, SignJWT } from 'jose'
 import { z } from 'zod'
+import { HttpError } from 'core'
 import type { GithubEnv } from '../env'
 
 export type FetchImpl = (input: string | URL, init?: RequestInit) => Promise<Response>
@@ -42,10 +43,11 @@ export async function createInstallationAccessToken(
     headers: {
       Authorization: `Bearer ${jwt}`,
       Accept: 'application/vnd.github+json',
+      'User-Agent': 'discord-project-ops',
     },
   })
   if (!response.ok) {
-    throw new Error(`GitHub installation token exchange failed: ${response.status}`)
+    throw new HttpError(502, `GitHub installation token exchange failed: ${response.status}`)
   }
   return installationTokenResponseSchema.parse(await response.json())
 }
@@ -64,10 +66,11 @@ export async function listAppInstallations(
     headers: {
       Authorization: `Bearer ${jwt}`,
       Accept: 'application/vnd.github+json',
+      'User-Agent': 'discord-project-ops',
     },
   })
   if (!response.ok) {
-    throw new Error(`GitHub installation list failed: ${response.status}`)
+    throw new HttpError(502, `GitHub installation list failed: ${response.status}`)
   }
   return z.array(installationSchema).parse(await response.json())
 }

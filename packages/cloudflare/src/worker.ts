@@ -1,3 +1,5 @@
+import { HttpError } from 'core'
+
 export type RouteHandlers<TEnv> = Record<string, (request: Request, env: TEnv) => Promise<Response>>
 
 export function createWorkerFetch<TEnv>(routes: RouteHandlers<TEnv>) {
@@ -9,6 +11,9 @@ export function createWorkerFetch<TEnv>(routes: RouteHandlers<TEnv>) {
       return await handler(request, env)
     } catch (error) {
       console.error(error)
+      if (error instanceof HttpError) {
+        return new Response(error.message, { status: error.status })
+      }
       return new Response('Internal Server Error', { status: 500 })
     }
   }

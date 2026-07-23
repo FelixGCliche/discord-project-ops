@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { createOAuthClient, type FetchImpl } from 'core'
+import { createOAuthClient, HttpError, type FetchImpl } from 'core'
 import type { GithubEnv } from '../env'
 
 const GITHUB_AUTHORIZE_URL = 'https://github.com/login/oauth/authorize'
@@ -82,10 +82,11 @@ export async function fetchAuthenticatedLogin(accessToken: string, fetchImpl: Fe
     headers: {
       Authorization: `Bearer ${accessToken}`,
       Accept: 'application/vnd.github+json',
+      'User-Agent': 'discord-project-ops',
     },
   })
   if (!response.ok) {
-    throw new Error(`GitHub user lookup failed: ${response.status}`)
+    throw new HttpError(502, `GitHub user lookup failed: ${response.status}`)
   }
   const parsed = userResponseSchema.parse(await response.json())
   return parsed.login

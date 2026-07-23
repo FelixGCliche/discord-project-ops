@@ -1,5 +1,6 @@
 import { importSPKI, jwtVerify } from 'jose'
 import { describe, expect, test } from 'bun:test'
+import { HttpError } from 'core'
 import type { GithubEnv } from '../env'
 import { TEST_GITHUB_APP_PRIVATE_KEY_BASE64, TEST_GITHUB_APP_PUBLIC_KEY_BASE64 } from './app-auth.fixtures'
 import { createAppJwt, createInstallationAccessToken, listAppInstallations } from './index'
@@ -63,6 +64,7 @@ describe('createInstallationAccessToken()', () => {
     expect(authHeader.startsWith('Bearer ')).toBe(true)
     expect(authHeader.replace('Bearer ', '').split('.').length).toBe(3)
     expect(capturedHeaders?.get('Accept')).toBe('application/vnd.github+json')
+    expect(capturedHeaders?.get('User-Agent')).toBe('discord-project-ops')
     expect(result).toEqual({ token: 'installation-token', expires_at: '2026-01-01T01:00:00Z' })
   })
 
@@ -71,6 +73,17 @@ describe('createInstallationAccessToken()', () => {
     await expect(createInstallationAccessToken(ENV, '12345', stubFetch)).rejects.toThrow(
       'GitHub installation token exchange failed: 404'
     )
+  })
+
+  test('throws an HttpError with status 502 when the response is not ok', async () => {
+    const stubFetch = async () => new Response('error', { status: 404 })
+    expect.assertions(2)
+    try {
+      await createInstallationAccessToken(ENV, '12345', stubFetch)
+    } catch (error) {
+      expect(error).toBeInstanceOf(HttpError)
+      expect((error as HttpError).status).toBe(502)
+    }
   })
 })
 
@@ -88,8 +101,35 @@ describe('listAppInstallations()', () => {
     ])
   })
 
+  test('sends a bearer JWT and the expected headers', async () => {
+    let capturedHeaders: Headers | undefined
+    const stubFetch = async (_url: string | URL, init?: RequestInit) => {
+      capturedHeaders = new Headers(init?.headers)
+      return Response.json([])
+    }
+
+    await listAppInstallations(ENV, stubFetch)
+
+    const authHeader = capturedHeaders?.get('Authorization') ?? ''
+    expect(authHeader.startsWith('Bearer ')).toBe(true)
+    expect(authHeader.replace('Bearer ', '').split('.').length).toBe(3)
+    expect(capturedHeaders?.get('Accept')).toBe('application/vnd.github+json')
+    expect(capturedHeaders?.get('User-Agent')).toBe('discord-project-ops')
+  })
+
   test('throws when the response is not ok', async () => {
     const stubFetch = async () => new Response('error', { status: 401 })
     await expect(listAppInstallations(ENV, stubFetch)).rejects.toThrow('GitHub installation list failed: 401')
+  })
+
+  test('throws an HttpError with status 502 when the response is not ok', async () => {
+    const stubFetch = async () => new Response('error', { status: 401 })
+    expect.assertions(2)
+    try {
+      await listAppInstallations(ENV, stubFetch)
+    } catch (error) {
+      expect(error).toBeInstanceOf(HttpError)
+      expect((error as HttpError).status).toBe(502)
+    }
   })
 })

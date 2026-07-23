@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { z } from 'zod'
+import { HttpError } from '../http-error'
 import { createOAuthClient, type FetchImpl } from './index'
 
 const linearTokenResponseSchema = z.object({
@@ -44,6 +45,17 @@ describe('createOAuthClient() without errorBodySchema (Linear-shaped)', () => {
     )
   })
 
+  test('throws an HttpError with status 502 when the token endpoint responds with an error status', async () => {
+    const stubFetch: FetchImpl = async () => new Response('error', { status: 401 })
+    expect.assertions(2)
+    try {
+      await client.exchangeCodeForToken({ code: 'some-code' }, stubFetch)
+    } catch (error) {
+      expect(error).toBeInstanceOf(HttpError)
+      expect((error as HttpError).status).toBe(502)
+    }
+  })
+
   test('parses and returns a valid token response', async () => {
     const payload = { access_token: 'token-123', token_type: 'Bearer' }
     const stubFetch: FetchImpl = async () => Response.json(payload)
@@ -67,11 +79,33 @@ describe('createOAuthClient() with errorBodySchema (GitHub-shaped)', () => {
     )
   })
 
+  test('throws an HttpError with status 502 when the token endpoint responds with an error status', async () => {
+    const stubFetch: FetchImpl = async () => new Response('error', { status: 401 })
+    expect.assertions(2)
+    try {
+      await client.exchangeCodeForToken({ code: 'some-code' }, stubFetch)
+    } catch (error) {
+      expect(error).toBeInstanceOf(HttpError)
+      expect((error as HttpError).status).toBe(502)
+    }
+  })
+
   test('throws with just the error when the body matches the error schema without error_description', async () => {
     const stubFetch: FetchImpl = async () => Response.json({ error: 'bad_verification_code' })
     await expect(client.exchangeCodeForToken({ code: 'some-code' }, stubFetch)).rejects.toThrow(
       'GitHub token exchange failed: bad_verification_code'
     )
+  })
+
+  test('throws an HttpError with status 400 when the body matches the error schema', async () => {
+    const stubFetch: FetchImpl = async () => Response.json({ error: 'bad_verification_code' })
+    expect.assertions(2)
+    try {
+      await client.exchangeCodeForToken({ code: 'some-code' }, stubFetch)
+    } catch (error) {
+      expect(error).toBeInstanceOf(HttpError)
+      expect((error as HttpError).status).toBe(400)
+    }
   })
 
   test('throws with the error and description when the body matches the error schema with error_description', async () => {
