@@ -1,4 +1,6 @@
 import { z } from 'zod'
+import { createOAuthClient } from 'core'
+import type { FetchImpl } from 'core'
 import type { LinearEnv } from '../env'
 
 const LINEAR_AUTHORIZE_URL = 'https://linear.app/oauth/authorize'
@@ -30,34 +32,26 @@ export function getAuthorizationUrl(env: LinearEnv, state: string): string {
   return `${LINEAR_AUTHORIZE_URL}?${params.toString()}`
 }
 
-export type FetchImpl = (input: string | URL, init?: RequestInit) => Promise<Response>
+export type { FetchImpl }
 
-async function requestToken(action: string, body: URLSearchParams, fetchImpl: FetchImpl): Promise<LinearTokenResponse> {
-  const response = await fetchImpl(LINEAR_TOKEN_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body,
-  })
-  if (!response.ok) {
-    throw new Error(`Linear token ${action} failed: ${response.status}`)
-  }
-  return tokenResponseSchema.parse(await response.json())
-}
+const client = createOAuthClient<LinearTokenResponse>({
+  provider: 'Linear',
+  tokenUrl: LINEAR_TOKEN_URL,
+  tokenResponseSchema,
+})
 
 export async function exchangeCodeForToken(
   env: LinearEnv,
   code: string,
   fetchImpl: FetchImpl = fetch
 ): Promise<LinearTokenResponse> {
-  return requestToken(
-    'exchange',
-    new URLSearchParams({
+  return client.exchangeCodeForToken(
+    {
       client_id: env.LINEAR_OAUTH_CLIENT_ID,
       client_secret: env.LINEAR_OAUTH_CLIENT_SECRET,
       redirect_uri: env.LINEAR_OAUTH_REDIRECT_URI,
       code,
-      grant_type: 'authorization_code',
-    }),
+    },
     fetchImpl
   )
 }
@@ -67,14 +61,12 @@ export async function refreshAccessToken(
   refreshToken: string,
   fetchImpl: FetchImpl = fetch
 ): Promise<LinearTokenResponse> {
-  return requestToken(
-    'refresh',
-    new URLSearchParams({
+  return client.refreshAccessToken(
+    {
       client_id: env.LINEAR_OAUTH_CLIENT_ID,
       client_secret: env.LINEAR_OAUTH_CLIENT_SECRET,
       refresh_token: refreshToken,
-      grant_type: 'refresh_token',
-    }),
+    },
     fetchImpl
   )
 }

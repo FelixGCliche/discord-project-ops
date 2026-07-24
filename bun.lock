@@ -22,6 +22,7 @@
       "dependencies": {
         "cloudflare": "workspace:*",
         "core": "workspace:*",
+        "github": "workspace:*",
         "linear": "workspace:*",
       },
       "devDependencies": {
@@ -50,6 +51,7 @@
       "name": "cloudflare",
       "dependencies": {
         "core": "workspace:*",
+        "github": "workspace:*",
         "jsonc-parser": "3.2.0",
         "linear": "workspace:*",
       },
@@ -72,6 +74,10 @@
     },
     "packages/github": {
       "name": "github",
+      "dependencies": {
+        "core": "workspace:*",
+        "jose": "^6.2.4",
+      },
       "devDependencies": {
         "@types/bun": "latest",
       },
@@ -345,6 +351,8 @@
     "graphql": ["graphql@17.0.2", "", {}, "sha512-FRWbddMxfkjiB7z+aQDWIR+E34xo9I8c9mtK2RPv8PmMzKRvrdsreHL/Ui/TmwHJfhHChEtsFPyMHKI+xuarQQ=="],
 
     "isexe": ["isexe@2.0.0", "", {}, "sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw=="],
+
+    "jose": ["jose@6.2.4", "", {}, "sha512-N8acGzVsQy6M/fjFcxtysNc4Q379TcM5dM/qKkNtsHFji88yANnXTr7BLeP75iPnFwBfQzM/jg2BZ9+HZrHCZA=="],
 
     "jsonc-parser": ["jsonc-parser@3.2.0", "", {}, "sha512-gfFQZrcTc8CnKXp6Y4/CBT3fTc0OVuDofpre4aEeEpSBPV5X5v4+Vmx+8snU7RLPrNHPKSgLxGo9YuQzz20o+w=="],
 

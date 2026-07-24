@@ -3,8 +3,8 @@ import { DurableObject } from 'cloudflare:workers'
 export type AuthState = {
   accessToken: string
   refreshToken: string
-  expiresAt: string
-  refreshTokenExpiresAt: string
+  expiresAt: string | null
+  refreshTokenExpiresAt: string | null
   login: string
   authorizedAt: string
   scopes: string[]
@@ -14,16 +14,17 @@ export class GithubTokenStore extends DurableObject {
   async storeAuth(
     accessToken: string,
     refreshToken: string,
-    expiresIn: number,
-    refreshTokenExpiresIn: number,
+    expiresIn: number | null,
+    refreshTokenExpiresIn: number | null,
     login: string,
     scopes: string[]
   ): Promise<void> {
     await this.ctx.storage.put<AuthState>('auth', {
       accessToken,
       refreshToken,
-      expiresAt: new Date(Date.now() + expiresIn * 1000).toISOString(),
-      refreshTokenExpiresAt: new Date(Date.now() + refreshTokenExpiresIn * 1000).toISOString(),
+      expiresAt: expiresIn == null ? null : new Date(Date.now() + expiresIn * 1000).toISOString(),
+      refreshTokenExpiresAt:
+        refreshTokenExpiresIn == null ? null : new Date(Date.now() + refreshTokenExpiresIn * 1000).toISOString(),
       login,
       authorizedAt: new Date().toISOString(),
       scopes,
@@ -33,8 +34,8 @@ export class GithubTokenStore extends DurableObject {
   async updateTokens(
     accessToken: string,
     refreshToken: string,
-    expiresIn: number,
-    refreshTokenExpiresIn: number
+    expiresIn: number | null,
+    refreshTokenExpiresIn: number | null
   ): Promise<void> {
     const existing = await this.ctx.storage.get<AuthState>('auth')
     if (!existing) {
@@ -44,8 +45,9 @@ export class GithubTokenStore extends DurableObject {
       ...existing,
       accessToken,
       refreshToken,
-      expiresAt: new Date(Date.now() + expiresIn * 1000).toISOString(),
-      refreshTokenExpiresAt: new Date(Date.now() + refreshTokenExpiresIn * 1000).toISOString(),
+      expiresAt: expiresIn == null ? null : new Date(Date.now() + expiresIn * 1000).toISOString(),
+      refreshTokenExpiresAt:
+        refreshTokenExpiresIn == null ? null : new Date(Date.now() + refreshTokenExpiresIn * 1000).toISOString(),
     })
   }
 

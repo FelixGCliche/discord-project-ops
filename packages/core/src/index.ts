@@ -12,6 +12,8 @@ export * from './issue/render'
 export * from './prompts'
 export * from './env'
 export * from './signed-state'
+export * from './oauth-client'
+export * from './http-error'
 
 export const JSON_SCHEMAS = {
   summarize: z.toJSONSchema(DecisionSchema),
