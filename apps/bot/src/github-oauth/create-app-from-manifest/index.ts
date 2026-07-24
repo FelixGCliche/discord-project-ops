@@ -48,7 +48,7 @@ function getWorkerBaseUrl(workerName: string): string {
 // GitHub App manifests accept an array of OAuth `callback_urls` -- one shared App, both
 // environments' Workers each need to appear here so either can complete the OAuth exchange.
 function buildCallbackUrls(): string[] {
-  return [getWorkerBaseUrl(STAGING_WORKER_NAME), getWorkerBaseUrl(PRODUCTION_WORKER_NAME)].map(
+  return [getWorkerBaseUrl(PRODUCTION_WORKER_NAME), getWorkerBaseUrl(STAGING_WORKER_NAME)].map(
     (baseUrl) => `${baseUrl}/github/oauth/callback`
   )
 }
