@@ -12,6 +12,7 @@ export const githubEnvSchema = z.object({
   GITHUB_OAUTH_STATE_SECRET: z.string().min(1),
   GITHUB_APP_ID: z.string().min(1),
   GITHUB_APP_PRIVATE_KEY_BASE64: z.string().min(1),
+  GITHUB_APP_SLUG: z.string().min(1),
 })
 
 export type GithubEnv = z.infer<typeof githubEnvSchema>

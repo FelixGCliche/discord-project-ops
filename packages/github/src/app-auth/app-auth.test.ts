@@ -12,6 +12,7 @@ const ENV: GithubEnv = {
   GITHUB_OAUTH_STATE_SECRET: 'state-secret',
   GITHUB_APP_ID: 'test-app-id',
   GITHUB_APP_PRIVATE_KEY_BASE64: TEST_GITHUB_APP_PRIVATE_KEY_BASE64,
+  GITHUB_APP_SLUG: 'test-app-slug',
 }
 
 function decodeBase64Url(segment: string): unknown {

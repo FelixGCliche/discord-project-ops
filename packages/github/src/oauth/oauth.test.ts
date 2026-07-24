@@ -11,6 +11,7 @@ const ENV: GithubEnv = {
   GITHUB_OAUTH_STATE_SECRET: 'state-secret',
   GITHUB_APP_ID: 'app-id',
   GITHUB_APP_PRIVATE_KEY_BASE64: 'private-key-base64',
+  GITHUB_APP_SLUG: 'test-app-slug',
 }
 
 describe('getAuthorizationUrl()', () => {

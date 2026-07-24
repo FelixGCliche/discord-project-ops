@@ -24,6 +24,7 @@ function createEnv(overrides: Partial<BotEnv> = {}) {
     GITHUB_OAUTH_STATE_SECRET: 'github-state-secret',
     GITHUB_APP_ID: 'github-app-id',
     GITHUB_APP_PRIVATE_KEY_BASE64: 'github-private-key-base64',
+    GITHUB_APP_SLUG: 'github-app-slug',
     ...overrides,
   } as BotEnv
   return { env, storeAuth, idFromName, get }

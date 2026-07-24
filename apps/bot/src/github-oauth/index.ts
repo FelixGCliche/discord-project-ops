@@ -6,8 +6,9 @@ import {
   type FetchImpl,
 } from 'github'
 import { type RouteHandlers } from 'cloudflare'
-import { parseEnv, verifySignedState } from 'core'
+import { createSignedState, parseEnv, verifySignedState } from 'core'
 import { botEnvSchema, type BotEnv } from '../env'
+import { buildInstallUrl } from './links'
 
 export function createGithubOAuthHandler(fetchImpl: FetchImpl = fetch): RouteHandlers<BotEnv> {
   return {
@@ -52,6 +53,15 @@ export function createGithubOAuthHandler(fetchImpl: FetchImpl = fetch): RouteHan
         login,
         token.scope.split(',').filter(Boolean)
       )
+
+      const installationId = env.GITHUB_INSTALLATION_STORE.idFromName('github-installation-store')
+      const installationStub = env.GITHUB_INSTALLATION_STORE.get(installationId)
+      const installation = await installationStub.getInstallation()
+
+      if (!installation) {
+        const installState = await createSignedState(env.GITHUB_OAUTH_STATE_SECRET)
+        return Response.redirect(buildInstallUrl(env.GITHUB_APP_SLUG, installState), 302)
+      }
 
       return new Response('GitHub connected successfully. You can close this tab.')
     },

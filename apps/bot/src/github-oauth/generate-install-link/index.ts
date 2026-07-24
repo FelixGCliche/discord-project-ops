@@ -1,9 +1,8 @@
 import { createSignedState, parseEnv } from 'core'
 import { githubEnvSchema } from 'github'
+import { buildInstallUrl } from '../links'
 
-export function buildInstallUrl(appSlug: string, state: string): string {
-  return `https://github.com/apps/${appSlug}/installations/new?state=${encodeURIComponent(state)}`
-}
+export { buildInstallUrl }
 
 async function main() {
   const appSlug = process.env.GITHUB_APP_SLUG ?? process.argv[2]

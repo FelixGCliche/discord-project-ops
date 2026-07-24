@@ -16,7 +16,14 @@ function createEnv(overrides: Partial<BotEnv> = {}) {
   const tokenGet = mock(() => tokenStub)
 
   const storeInstallation = mock(async () => {})
-  const installationStub = { storeInstallation }
+  const getInstallation = mock(
+    async (): Promise<{ installationId: string; accountLogin: string; installedAt: string } | null> => ({
+      installationId: '12345',
+      accountLogin: 'octo-org',
+      installedAt: '2024-01-01T00:00:00.000Z',
+    })
+  )
+  const installationStub = { storeInstallation, getInstallation }
   const installationIdFromName = mock(() => 'fake-installation-id')
   const installationGet = mock(() => installationStub)
 
@@ -32,6 +39,7 @@ function createEnv(overrides: Partial<BotEnv> = {}) {
     GITHUB_OAUTH_STATE_SECRET: 'github-state-secret',
     GITHUB_APP_ID: 'github-app-id',
     GITHUB_APP_PRIVATE_KEY_BASE64: TEST_GITHUB_APP_PRIVATE_KEY_BASE64,
+    GITHUB_APP_SLUG: 'discord-project-ops',
     GITHUB_TOKEN_STORE: { idFromName: tokenIdFromName, get: tokenGet },
     GITHUB_INSTALLATION_STORE: { idFromName: installationIdFromName, get: installationGet },
     ...overrides,
@@ -42,6 +50,7 @@ function createEnv(overrides: Partial<BotEnv> = {}) {
     tokenIdFromName,
     tokenGet,
     storeInstallation,
+    getInstallation,
     installationIdFromName,
     installationGet,
   }
@@ -196,6 +205,22 @@ describe('/github/oauth/callback', () => {
       `https://bot.example.com/github/oauth/callback?code=some-code&state=${encodeURIComponent(state)}`
     )
     expect(callbackHandler(request, env)).rejects.toThrow()
+  })
+
+  test('redirects to the GitHub App install URL when the App is not yet installed', async () => {
+    const { env, getInstallation } = createEnv()
+    getInstallation.mockImplementation(async () => null)
+    const state = await createSignedState(env.GITHUB_OAUTH_STATE_SECRET)
+    const request = new Request(
+      `https://bot.example.com/github/oauth/callback?code=some-code&state=${encodeURIComponent(state)}`
+    )
+
+    const response = await callbackHandler(request, env)
+
+    expect(response.status).toBe(302)
+    const location = new URL(response.headers.get('Location')!)
+    expect(location.origin + location.pathname).toBe(`https://github.com/apps/${env.GITHUB_APP_SLUG}/installations/new`)
+    expect(location.searchParams.get('state')).toBeTruthy()
   })
 })
 

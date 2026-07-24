@@ -1,11 +1,8 @@
 import { createSignedState, parseEnv } from 'core'
 import { githubEnvSchema } from 'github'
+import { buildAuthorizeUrl } from '../links'
 
-export function buildAuthorizeUrl(redirectUri: string, token: string): string {
-  const url = new URL('/github/oauth/authorize', redirectUri)
-  url.searchParams.set('token', token)
-  return url.toString()
-}
+export { buildAuthorizeUrl }
 
 async function main() {
   const env = parseEnv(githubEnvSchema, process.env)
