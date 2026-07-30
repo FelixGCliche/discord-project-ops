@@ -1,6 +1,6 @@
 import { createSignedState, parseEnv } from 'core'
 import { githubEnvSchema } from 'github'
-import { buildInstallUrl } from '../links'
+import { buildInstallUrl, GITHUB_INSTALL_STATE_PURPOSE } from '../links'
 
 export { buildInstallUrl }
 
@@ -10,7 +10,7 @@ async function main() {
     throw new Error('GITHUB_APP_SLUG env var or a CLI arg is required')
   }
   const env = parseEnv(githubEnvSchema, process.env)
-  const token = await createSignedState(env.GITHUB_OAUTH_STATE_SECRET)
+  const token = await createSignedState(env.GITHUB_OAUTH_STATE_SECRET, GITHUB_INSTALL_STATE_PURPOSE)
   console.log(buildInstallUrl(appSlug, token))
 }
 

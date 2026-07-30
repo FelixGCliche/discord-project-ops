@@ -8,7 +8,7 @@ import {
 import { type RouteHandlers } from 'cloudflare'
 import { createSignedState, parseEnv, verifySignedState } from 'core'
 import { botEnvSchema, type BotEnv } from '../env'
-import { buildInstallUrl } from './links'
+import { buildInstallUrl, GITHUB_INSTALL_STATE_PURPOSE, GITHUB_OAUTH_STATE_PURPOSE } from './links'
 
 export function createGithubOAuthHandler(fetchImpl: FetchImpl = fetch): RouteHandlers<BotEnv> {
   return {
@@ -20,7 +20,7 @@ export function createGithubOAuthHandler(fetchImpl: FetchImpl = fetch): RouteHan
       parseEnv(botEnvSchema, env)
       const url = new URL(request.url)
       const token = url.searchParams.get('token') ?? ''
-      if (!(await verifySignedState(env.GITHUB_OAUTH_STATE_SECRET, token))) {
+      if (!(await verifySignedState(env.GITHUB_OAUTH_STATE_SECRET, token, GITHUB_OAUTH_STATE_PURPOSE))) {
         return new Response('Unauthorized', { status: 401 })
       }
       const authUrl = getAuthorizationUrl(env, token)
@@ -35,7 +35,7 @@ export function createGithubOAuthHandler(fetchImpl: FetchImpl = fetch): RouteHan
         return new Response('Missing code or state', { status: 400 })
       }
 
-      const isValid = await verifySignedState(env.GITHUB_OAUTH_STATE_SECRET, state)
+      const isValid = await verifySignedState(env.GITHUB_OAUTH_STATE_SECRET, state, GITHUB_OAUTH_STATE_PURPOSE)
       if (!isValid) {
         return new Response('Invalid or expired state', { status: 400 })
       }
@@ -59,7 +59,7 @@ export function createGithubOAuthHandler(fetchImpl: FetchImpl = fetch): RouteHan
       const installation = await installationStub.getInstallation()
 
       if (!installation) {
-        const installState = await createSignedState(env.GITHUB_OAUTH_STATE_SECRET)
+        const installState = await createSignedState(env.GITHUB_OAUTH_STATE_SECRET, GITHUB_INSTALL_STATE_PURPOSE)
         return Response.redirect(buildInstallUrl(env.GITHUB_APP_SLUG, installState), 302)
       }
 
@@ -87,7 +87,7 @@ export function createGithubOAuthHandler(fetchImpl: FetchImpl = fetch): RouteHan
       if (!state) {
         return new Response('Missing state', { status: 400 })
       }
-      if (!(await verifySignedState(env.GITHUB_OAUTH_STATE_SECRET, state))) {
+      if (!(await verifySignedState(env.GITHUB_OAUTH_STATE_SECRET, state, GITHUB_INSTALL_STATE_PURPOSE))) {
         return new Response('Invalid or expired state', { status: 400 })
       }
 

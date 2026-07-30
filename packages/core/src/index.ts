@@ -14,6 +14,8 @@ export * from './env'
 export * from './signed-state'
 export * from './oauth-client'
 export * from './http-error'
+export * from './html-page'
+export * from './pkcs-key'
 
 export const JSON_SCHEMAS = {
   summarize: z.toJSONSchema(DecisionSchema),

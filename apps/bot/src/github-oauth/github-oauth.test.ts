@@ -3,6 +3,7 @@ import { createSignedState } from 'core'
 import { TEST_GITHUB_APP_PRIVATE_KEY_BASE64 } from 'github/app-auth/app-auth.fixtures.ts'
 import { buildGithubTokenResponse } from 'github/oauth/oauth.fixtures.ts'
 import type { BotEnv } from '../env'
+import { GITHUB_INSTALL_STATE_PURPOSE, GITHUB_OAUTH_STATE_PURPOSE } from './links'
 import { createGithubOAuthHandler } from './index'
 
 const GITHUB_TOKEN_URL = 'https://github.com/login/oauth/access_token'
@@ -98,7 +99,7 @@ describe('/github/oauth/authorize', () => {
 
   test('returns 401 when the token was signed with a different secret', async () => {
     const { env } = createEnv()
-    const token = await createSignedState('a-different-secret')
+    const token = await createSignedState('a-different-secret', GITHUB_OAUTH_STATE_PURPOSE)
     const request = new Request(`https://bot.example.com/github/oauth/authorize?token=${encodeURIComponent(token)}`)
     const response = await authorizeHandler(request, env)
     expect(response.status).toBe(401)
@@ -106,7 +107,7 @@ describe('/github/oauth/authorize', () => {
 
   test('redirects to the GitHub authorize URL when the token is valid', async () => {
     const { env } = createEnv()
-    const token = await createSignedState(env.GITHUB_OAUTH_STATE_SECRET)
+    const token = await createSignedState(env.GITHUB_OAUTH_STATE_SECRET, GITHUB_OAUTH_STATE_PURPOSE)
     const request = new Request(`https://bot.example.com/github/oauth/authorize?token=${encodeURIComponent(token)}`)
     const response = await authorizeHandler(request, env)
     expect(response.status).toBe(302)
@@ -122,6 +123,14 @@ describe('/github/oauth/authorize', () => {
     const { env } = createEnv({ GITHUB_OAUTH_STATE_SECRET: undefined as unknown as string })
     const request = new Request('https://bot.example.com/github/oauth/authorize?token=some-token')
     expect(authorizeHandler(request, env)).rejects.toThrow()
+  })
+
+  test('returns 401 when the token was minted for a different purpose', async () => {
+    const { env } = createEnv()
+    const token = await createSignedState(env.GITHUB_OAUTH_STATE_SECRET, GITHUB_INSTALL_STATE_PURPOSE)
+    const request = new Request(`https://bot.example.com/github/oauth/authorize?token=${encodeURIComponent(token)}`)
+    const response = await authorizeHandler(request, env)
+    expect(response.status).toBe(401)
   })
 })
 
@@ -149,7 +158,7 @@ describe('/github/oauth/callback', () => {
 
   test('exchanges the code, stores the auth, and returns 200 on a valid callback', async () => {
     const { env, storeAuth, tokenIdFromName, tokenGet } = createEnv()
-    const state = await createSignedState(env.GITHUB_OAUTH_STATE_SECRET)
+    const state = await createSignedState(env.GITHUB_OAUTH_STATE_SECRET, GITHUB_OAUTH_STATE_PURPOSE)
     const request = new Request(
       `https://bot.example.com/github/oauth/callback?code=some-code&state=${encodeURIComponent(state)}`
     )
@@ -175,7 +184,7 @@ describe('/github/oauth/callback', () => {
       }
       throw new Error(`Unexpected fetch call: ${url}`)
     })
-    const state = await createSignedState(env.GITHUB_OAUTH_STATE_SECRET)
+    const state = await createSignedState(env.GITHUB_OAUTH_STATE_SECRET, GITHUB_OAUTH_STATE_PURPOSE)
     const request = new Request(
       `https://bot.example.com/github/oauth/callback?code=some-code&state=${encodeURIComponent(state)}`
     )
@@ -189,7 +198,7 @@ describe('/github/oauth/callback', () => {
   test('rejects and never stores auth when the token exchange fails', async () => {
     const { env, storeAuth } = createEnv()
     fetchMock.mockImplementation(async () => new Response('error', { status: 401 }))
-    const state = await createSignedState(env.GITHUB_OAUTH_STATE_SECRET)
+    const state = await createSignedState(env.GITHUB_OAUTH_STATE_SECRET, GITHUB_OAUTH_STATE_PURPOSE)
     const request = new Request(
       `https://bot.example.com/github/oauth/callback?code=some-code&state=${encodeURIComponent(state)}`
     )
@@ -200,7 +209,7 @@ describe('/github/oauth/callback', () => {
 
   test('rejects when the env is invalid', async () => {
     const { env } = createEnv({ GITHUB_OAUTH_CLIENT_ID: undefined as unknown as string })
-    const state = await createSignedState(env.GITHUB_OAUTH_STATE_SECRET)
+    const state = await createSignedState(env.GITHUB_OAUTH_STATE_SECRET, GITHUB_OAUTH_STATE_PURPOSE)
     const request = new Request(
       `https://bot.example.com/github/oauth/callback?code=some-code&state=${encodeURIComponent(state)}`
     )
@@ -210,7 +219,7 @@ describe('/github/oauth/callback', () => {
   test('redirects to the GitHub App install URL when the App is not yet installed', async () => {
     const { env, getInstallation } = createEnv()
     getInstallation.mockImplementation(async () => null)
-    const state = await createSignedState(env.GITHUB_OAUTH_STATE_SECRET)
+    const state = await createSignedState(env.GITHUB_OAUTH_STATE_SECRET, GITHUB_OAUTH_STATE_PURPOSE)
     const request = new Request(
       `https://bot.example.com/github/oauth/callback?code=some-code&state=${encodeURIComponent(state)}`
     )
@@ -221,6 +230,16 @@ describe('/github/oauth/callback', () => {
     const location = new URL(response.headers.get('Location')!)
     expect(location.origin + location.pathname).toBe(`https://github.com/apps/${env.GITHUB_APP_SLUG}/installations/new`)
     expect(location.searchParams.get('state')).toBeTruthy()
+  })
+
+  test('returns 400 when the state was minted for a different purpose', async () => {
+    const { env } = createEnv()
+    const state = await createSignedState(env.GITHUB_OAUTH_STATE_SECRET, GITHUB_INSTALL_STATE_PURPOSE)
+    const request = new Request(
+      `https://bot.example.com/github/oauth/callback?code=some-code&state=${encodeURIComponent(state)}`
+    )
+    const response = await callbackHandler(request, env)
+    expect(response.status).toBe(400)
   })
 })
 
@@ -243,7 +262,7 @@ describe('/github/install', () => {
 
   test('returns 400 when state was signed with a different secret', async () => {
     const { env } = createEnv()
-    const state = await createSignedState('a-different-secret')
+    const state = await createSignedState('a-different-secret', GITHUB_INSTALL_STATE_PURPOSE)
     const request = new Request(
       `https://bot.example.com/github/install?installation_id=12345&setup_action=install&state=${encodeURIComponent(state)}`
     )
@@ -253,7 +272,7 @@ describe('/github/install', () => {
 
   test('returns 400 when installation_id is missing', async () => {
     const { env } = createEnv()
-    const state = await createSignedState(env.GITHUB_OAUTH_STATE_SECRET)
+    const state = await createSignedState(env.GITHUB_OAUTH_STATE_SECRET, GITHUB_INSTALL_STATE_PURPOSE)
     const request = new Request(
       `https://bot.example.com/github/install?setup_action=install&state=${encodeURIComponent(state)}`
     )
@@ -263,7 +282,7 @@ describe('/github/install', () => {
 
   test('resolves the account login and stores the installation on a valid request', async () => {
     const { env, storeInstallation, installationIdFromName, installationGet } = createEnv()
-    const state = await createSignedState(env.GITHUB_OAUTH_STATE_SECRET)
+    const state = await createSignedState(env.GITHUB_OAUTH_STATE_SECRET, GITHUB_INSTALL_STATE_PURPOSE)
     const request = new Request(
       `https://bot.example.com/github/install?installation_id=12345&setup_action=install&state=${encodeURIComponent(state)}`
     )
@@ -279,7 +298,7 @@ describe('/github/install', () => {
 
   test('returns 404 and never stores the installation when no matching installation is found', async () => {
     const { env, storeInstallation } = createEnv()
-    const state = await createSignedState(env.GITHUB_OAUTH_STATE_SECRET)
+    const state = await createSignedState(env.GITHUB_OAUTH_STATE_SECRET, GITHUB_INSTALL_STATE_PURPOSE)
     const request = new Request(
       `https://bot.example.com/github/install?installation_id=99999&setup_action=install&state=${encodeURIComponent(state)}`
     )
@@ -290,9 +309,19 @@ describe('/github/install', () => {
     expect(response.status).toBe(404)
   })
 
+  test('returns 400 when the state was minted for the oauth/callback purpose', async () => {
+    const { env } = createEnv()
+    const state = await createSignedState(env.GITHUB_OAUTH_STATE_SECRET, GITHUB_OAUTH_STATE_PURPOSE)
+    const request = new Request(
+      `https://bot.example.com/github/install?installation_id=12345&setup_action=install&state=${encodeURIComponent(state)}`
+    )
+    const response = await installHandler(request, env)
+    expect(response.status).toBe(400)
+  })
+
   test('rejects when the env is invalid', async () => {
     const { env } = createEnv({ GITHUB_APP_ID: undefined as unknown as string })
-    const state = await createSignedState(env.GITHUB_OAUTH_STATE_SECRET)
+    const state = await createSignedState(env.GITHUB_OAUTH_STATE_SECRET, GITHUB_INSTALL_STATE_PURPOSE)
     const request = new Request(
       `https://bot.example.com/github/install?installation_id=12345&state=${encodeURIComponent(state)}`
     )

@@ -1,6 +1,6 @@
-import { createPrivateKey } from 'node:crypto'
 import { z } from 'zod'
 import { getWorkerUrl, requireWorkersSubdomain } from 'cloudflare'
+import { convertPkcs1PemToPkcs8Base64, renderAutoSubmitFormPage, renderHtmlPage } from 'core'
 
 // One-time, local-only developer tool: drives GitHub's "App Manifest flow" so creating the
 // shared GitHub App only requires one human click (the "Create GitHub App" confirmation on
@@ -47,7 +47,7 @@ function getWorkerBaseUrl(workerName: string): string {
 
 // GitHub App manifests accept an array of OAuth `callback_urls` -- one shared App, both
 // environments' Workers each need to appear here so either can complete the OAuth exchange.
-function buildCallbackUrls(): string[] {
+export function buildCallbackUrls(): string[] {
   return [getWorkerBaseUrl(PRODUCTION_WORKER_NAME), getWorkerBaseUrl(STAGING_WORKER_NAME)].map(
     (baseUrl) => `${baseUrl}/github/oauth/callback`
   )
@@ -59,11 +59,11 @@ function buildCallbackUrls(): string[] {
 // post-install redirect to land on staging, edit the App's "Setup URL" by hand afterward under
 // https://github.com/settings/apps/<slug> -- this function is the one place to fix if GitHub's
 // actual manifest schema turns out to differ from this.
-function buildSetupUrl(): string {
+export function buildSetupUrl(): string {
   return `${getWorkerBaseUrl(PRODUCTION_WORKER_NAME)}/github/install`
 }
 
-function buildManifest(localPort: number): GithubAppManifest {
+export function buildManifest(localPort: number): GithubAppManifest {
   const name = process.env.GITHUB_APP_NAME ?? process.argv[2] ?? DEFAULT_APP_NAME
   return {
     name,
@@ -80,35 +80,7 @@ function buildManifest(localPort: number): GithubAppManifest {
   }
 }
 
-function escapeHtmlAttribute(value: string): string {
-  return value.replace(/&/g, '&amp;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-}
-
-function renderManifestForm(manifest: GithubAppManifest, state: string): string {
-  const manifestJson = escapeHtmlAttribute(JSON.stringify(manifest))
-  const actionUrl = `https://github.com/settings/apps/new?state=${encodeURIComponent(state)}`
-  return `<!doctype html>
-<html>
-  <head><meta charset="utf-8" /><title>Creating GitHub App...</title></head>
-  <body>
-    <p>Redirecting to GitHub to create the App...</p>
-    <form action="${actionUrl}" method="post">
-      <input type="hidden" name="manifest" value='${manifestJson}' />
-    </form>
-    <script>document.forms[0].submit()</script>
-  </body>
-</html>`
-}
-
-function renderDonePage(): string {
-  return `<!doctype html>
-<html>
-  <head><meta charset="utf-8" /><title>Done</title></head>
-  <body><p>Done -- check your terminal.</p></body>
-</html>`
-}
-
-async function convertManifestCode(code: string) {
+export async function convertManifestCode(code: string) {
   const response = await fetch(`https://api.github.com/app-manifests/${code}/conversions`, {
     method: 'POST',
     headers: { Accept: 'application/vnd.github+json' },
@@ -121,14 +93,7 @@ async function convertManifestCode(code: string) {
   return manifestConversionResponseSchema.parse(await response.json())
 }
 
-function convertPkcs1ToPkcs8Base64(pkcs1Pem: string): string {
-  // GitHub hands back the App's private key as PKCS#1 (`-----BEGIN RSA PRIVATE KEY-----`).
-  // node:crypto auto-detects the PEM format on import, so we just re-export as PKCS#8.
-  const pkcs8Pem = createPrivateKey(pkcs1Pem).export({ type: 'pkcs8', format: 'pem' })
-  return Buffer.from(pkcs8Pem.toString()).toString('base64')
-}
-
-async function handleCallback(url: URL, expectedState: string): Promise<Response> {
+export async function handleCallback(url: URL, expectedState: string): Promise<Response> {
   const code = url.searchParams.get('code')
   const returnedState = url.searchParams.get('state')
 
@@ -141,7 +106,7 @@ async function handleCallback(url: URL, expectedState: string): Promise<Response
   }
 
   const result = await convertManifestCode(code)
-  const privateKeyBase64 = convertPkcs1ToPkcs8Base64(result.pem)
+  const privateKeyBase64 = convertPkcs1PemToPkcs8Base64(result.pem)
 
   console.log('\nGitHub App created. Paste these into packages/github/.env (or push as Cloudflare secrets):\n')
   console.log(`GITHUB_APP_ID=${result.id}`)
@@ -157,7 +122,9 @@ async function handleCallback(url: URL, expectedState: string): Promise<Response
       'required for refresh tokens to ever be issued.\n'
   )
 
-  return new Response(renderDonePage(), { headers: { 'content-type': 'text/html; charset=utf-8' } })
+  return new Response(renderHtmlPage({ title: 'Done', bodyHtml: '<p>Done -- check your terminal.</p>' }), {
+    headers: { 'content-type': 'text/html; charset=utf-8' },
+  })
 }
 
 async function main() {
@@ -178,9 +145,15 @@ async function main() {
       }
 
       if (url.pathname === '/') {
-        return new Response(renderManifestForm(manifest, state), {
-          headers: { 'content-type': 'text/html; charset=utf-8' },
-        })
+        return new Response(
+          renderAutoSubmitFormPage({
+            title: 'Creating GitHub App...',
+            message: 'Redirecting to GitHub to create the App...',
+            actionUrl: `https://github.com/settings/apps/new?state=${encodeURIComponent(state)}`,
+            fields: { manifest: JSON.stringify(manifest) },
+          }),
+          { headers: { 'content-type': 'text/html; charset=utf-8' } }
+        )
       }
 
       return new Response('Not found', { status: 404 })

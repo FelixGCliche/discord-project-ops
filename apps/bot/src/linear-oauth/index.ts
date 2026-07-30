@@ -3,6 +3,8 @@ import { type RouteHandlers } from 'cloudflare'
 import { parseEnv, verifySignedState } from 'core'
 import { botEnvSchema, type BotEnv } from '../env'
 
+export const LINEAR_OAUTH_STATE_PURPOSE = 'linear-oauth'
+
 export function createLinearOAuthHandler(fetchImpl: FetchImpl = fetch): RouteHandlers<BotEnv> {
   return {
     // The token travels as a query param here so this link can be shared/clicked directly;
@@ -13,7 +15,7 @@ export function createLinearOAuthHandler(fetchImpl: FetchImpl = fetch): RouteHan
       parseEnv(botEnvSchema, env)
       const url = new URL(request.url)
       const token = url.searchParams.get('token') ?? ''
-      if (!(await verifySignedState(env.LINEAR_OAUTH_STATE_SECRET, token))) {
+      if (!(await verifySignedState(env.LINEAR_OAUTH_STATE_SECRET, token, LINEAR_OAUTH_STATE_PURPOSE))) {
         return new Response('Unauthorized', { status: 401 })
       }
       const authUrl = getAuthorizationUrl(env, token)
@@ -28,7 +30,7 @@ export function createLinearOAuthHandler(fetchImpl: FetchImpl = fetch): RouteHan
         return new Response('Missing code or state', { status: 400 })
       }
 
-      const isValid = await verifySignedState(env.LINEAR_OAUTH_STATE_SECRET, state)
+      const isValid = await verifySignedState(env.LINEAR_OAUTH_STATE_SECRET, state, LINEAR_OAUTH_STATE_PURPOSE)
       if (!isValid) {
         return new Response('Invalid or expired state', { status: 400 })
       }
