@@ -17,7 +17,10 @@
     "secrets:push:staging": "bun run apps/bot/src/secrets/provision.ts staging",
     "secrets:validate": "bun run apps/bot/src/secrets/validate.ts",
     "secrets:validate:staging": "bun run apps/bot/src/secrets/validate.ts staging",
-    "oauth:linear": "bun --env-file=packages/linear/.env run apps/bot/src/linear-oauth/generate-authorize-link/index.ts"
+    "oauth:linear": "bun --env-file=packages/linear/.env run apps/bot/src/linear-oauth/generate-authorize-link/index.ts",
+    "oauth:github": "bun --env-file=packages/github/.env run apps/bot/src/github-oauth/generate-authorize-link/index.ts",
+    "github:create-app": "bun --env-file=packages/cloudflare/.env run apps/bot/src/github-oauth/create-app-from-manifest/index.ts",
+    "github:install": "bun --env-file=packages/github/.env run apps/bot/src/github-oauth/generate-install-link/index.ts"
   },
   "dependencies": {
     "zod": "^4.4.3"

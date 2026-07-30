@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, mock, test } from 'bun:test'
 import { createSignedState } from 'core'
 import { buildLinearTokenResponse } from 'linear/oauth/oauth.fixtures.ts'
 import type { BotEnv } from '../env'
-import { createLinearOAuthHandler } from './index'
+import { createLinearOAuthHandler, LINEAR_OAUTH_STATE_PURPOSE } from './index'
 import { linearSdkMock } from './linear-sdk-mock.preload'
 
 const LINEAR_TOKEN_URL = 'https://api.linear.app/oauth/token'
@@ -18,6 +18,13 @@ function createEnv(overrides: Partial<BotEnv> = {}) {
     LINEAR_OAUTH_REDIRECT_URI: 'https://example.com/oauth/callback',
     LINEAR_OAUTH_STATE_SECRET: 'state-secret',
     LINEAR_TOKEN_STORE: { idFromName, get },
+    GITHUB_OAUTH_CLIENT_ID: 'github-client-id',
+    GITHUB_OAUTH_CLIENT_SECRET: 'github-client-secret',
+    GITHUB_OAUTH_REDIRECT_URI: 'https://example.com/github/oauth/callback',
+    GITHUB_OAUTH_STATE_SECRET: 'github-state-secret',
+    GITHUB_APP_ID: 'github-app-id',
+    GITHUB_APP_PRIVATE_KEY_BASE64: 'github-private-key-base64',
+    GITHUB_APP_SLUG: 'github-app-slug',
     ...overrides,
   } as BotEnv
   return { env, storeAuth, idFromName, get }
@@ -52,7 +59,7 @@ describe('/oauth/authorize', () => {
 
   test('returns 401 when the token was signed with a different secret', async () => {
     const { env } = createEnv()
-    const token = await createSignedState('a-different-secret')
+    const token = await createSignedState('a-different-secret', LINEAR_OAUTH_STATE_PURPOSE)
     const request = new Request(`https://bot.example.com/oauth/authorize?token=${encodeURIComponent(token)}`)
     const response = await authorizeHandler(request, env)
     expect(response.status).toBe(401)
@@ -60,7 +67,7 @@ describe('/oauth/authorize', () => {
 
   test('redirects to the Linear authorize URL when the token is valid', async () => {
     const { env } = createEnv()
-    const token = await createSignedState(env.LINEAR_OAUTH_STATE_SECRET)
+    const token = await createSignedState(env.LINEAR_OAUTH_STATE_SECRET, LINEAR_OAUTH_STATE_PURPOSE)
     const request = new Request(`https://bot.example.com/oauth/authorize?token=${encodeURIComponent(token)}`)
     const response = await authorizeHandler(request, env)
     expect(response.status).toBe(302)
@@ -77,6 +84,14 @@ describe('/oauth/authorize', () => {
     const { env } = createEnv({ LINEAR_OAUTH_STATE_SECRET: undefined as unknown as string })
     const request = new Request('https://bot.example.com/oauth/authorize?token=some-token')
     expect(authorizeHandler(request, env)).rejects.toThrow()
+  })
+
+  test('rejects a token minted for a different purpose', async () => {
+    const { env } = createEnv()
+    const token = await createSignedState(env.LINEAR_OAUTH_STATE_SECRET, 'some-other-purpose')
+    const request = new Request(`https://bot.example.com/oauth/authorize?token=${encodeURIComponent(token)}`)
+    const response = await authorizeHandler(request, env)
+    expect(response.status).toBe(401)
   })
 })
 
@@ -104,7 +119,7 @@ describe('/oauth/callback', () => {
 
   test('exchanges the code, stores the auth, and returns 200 on a valid callback', async () => {
     const { env, storeAuth, idFromName, get } = createEnv()
-    const state = await createSignedState(env.LINEAR_OAUTH_STATE_SECRET)
+    const state = await createSignedState(env.LINEAR_OAUTH_STATE_SECRET, LINEAR_OAUTH_STATE_PURPOSE)
     const request = new Request(
       `https://bot.example.com/oauth/callback?code=some-code&state=${encodeURIComponent(state)}`
     )
@@ -127,7 +142,7 @@ describe('/oauth/callback', () => {
   test('rejects and never stores auth when the token exchange fails', async () => {
     const { env, storeAuth } = createEnv()
     tokenFetchMock.mockImplementation(async () => new Response('error', { status: 401 }))
-    const state = await createSignedState(env.LINEAR_OAUTH_STATE_SECRET)
+    const state = await createSignedState(env.LINEAR_OAUTH_STATE_SECRET, LINEAR_OAUTH_STATE_PURPOSE)
     const request = new Request(
       `https://bot.example.com/oauth/callback?code=some-code&state=${encodeURIComponent(state)}`
     )
@@ -138,7 +153,7 @@ describe('/oauth/callback', () => {
 
   test('rejects when the env is invalid', async () => {
     const { env } = createEnv({ LINEAR_OAUTH_CLIENT_ID: undefined as unknown as string })
-    const state = await createSignedState(env.LINEAR_OAUTH_STATE_SECRET)
+    const state = await createSignedState(env.LINEAR_OAUTH_STATE_SECRET, LINEAR_OAUTH_STATE_PURPOSE)
     const request = new Request(
       `https://bot.example.com/oauth/callback?code=some-code&state=${encodeURIComponent(state)}`
     )

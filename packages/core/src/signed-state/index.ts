@@ -1,6 +1,6 @@
 const DEFAULT_MAX_AGE_MS = 10 * 60 * 1000
 
-function toBase64Url(buffer: ArrayBuffer): string {
+export function toBase64Url(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer)
   let binary = ''
   for (const byte of bytes) binary += String.fromCharCode(byte)
@@ -28,22 +28,23 @@ async function hmacSign(secret: string, message: string): Promise<string> {
   return toBase64Url(signature)
 }
 
-export async function createSignedState(secret: string): Promise<string> {
+export async function createSignedState(secret: string, purpose: string): Promise<string> {
   const nonce = crypto.randomUUID()
   const timestamp = Date.now().toString()
-  const signature = await hmacSign(secret, `${nonce}.${timestamp}`)
+  const signature = await hmacSign(secret, `${purpose}:${nonce}.${timestamp}`)
   return `${nonce}.${timestamp}.${signature}`
 }
 
 export async function verifySignedState(
   secret: string,
   state: string,
+  purpose: string,
   maxAgeMs = DEFAULT_MAX_AGE_MS
 ): Promise<boolean> {
   const parts = state.split('.')
   if (parts.length !== 3) return false
   const [nonce, timestamp, signature] = parts as [string, string, string]
-  const expectedSignature = await hmacSign(secret, `${nonce}.${timestamp}`)
+  const expectedSignature = await hmacSign(secret, `${purpose}:${nonce}.${timestamp}`)
   if (!timingSafeEqual(signature, expectedSignature)) return false
   const age = Date.now() - Number(timestamp)
   return Number.isFinite(age) && age >= 0 && age <= maxAgeMs

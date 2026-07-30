@@ -1,5 +1,6 @@
 import { createSignedState, parseEnv } from 'core'
-import { botEnvSchema } from '../../env'
+import { linearEnvSchema } from 'linear'
+import { LINEAR_OAUTH_STATE_PURPOSE } from '..'
 
 export function buildAuthorizeUrl(redirectUri: string, token: string): string {
   const url = new URL('/oauth/authorize', redirectUri)
@@ -8,8 +9,8 @@ export function buildAuthorizeUrl(redirectUri: string, token: string): string {
 }
 
 async function main() {
-  const env = parseEnv(botEnvSchema, process.env)
-  const token = await createSignedState(env.LINEAR_OAUTH_STATE_SECRET)
+  const env = parseEnv(linearEnvSchema, process.env)
+  const token = await createSignedState(env.LINEAR_OAUTH_STATE_SECRET, LINEAR_OAUTH_STATE_PURPOSE)
   console.log(buildAuthorizeUrl(env.LINEAR_OAUTH_REDIRECT_URI, token))
 }
 
