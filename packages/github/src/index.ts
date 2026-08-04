@@ -12,3 +12,4 @@ export {
   listAppInstallations,
   type InstallationTokenResponse,
 } from './app-auth'
+export { Octokit } from '@octokit/rest'
