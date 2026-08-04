@@ -14,3 +14,10 @@ export {
 } from './app-auth'
 export { Octokit } from '@octokit/rest'
 export { syncVaultDoc, VaultDocSyncError, type SyncVaultDocParams, type SyncedVaultDoc } from './sync-vault-doc'
+export {
+  getRepoFile,
+  listRepoTree,
+  RepoFileNotFoundError,
+  type RepoFile,
+  type RepoTreeEntry,
+} from './read-repo-context'
