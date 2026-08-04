@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { createOAuthClient, HttpError, type FetchImpl } from 'core'
+import { createOAuthClient, HttpError } from 'core'
 import type { GithubEnv } from '../env'
 
 const GITHUB_AUTHORIZE_URL = 'https://github.com/login/oauth/authorize'
@@ -37,8 +37,6 @@ export function getAuthorizationUrl(env: GithubEnv, state: string): string {
   return `${GITHUB_AUTHORIZE_URL}?${params.toString()}`
 }
 
-export type { FetchImpl } from 'core'
-
 const client = createOAuthClient<GithubTokenResponse>({
   provider: 'GitHub',
   tokenUrl: GITHUB_TOKEN_URL,
@@ -46,39 +44,25 @@ const client = createOAuthClient<GithubTokenResponse>({
   errorBodySchema: tokenErrorSchema,
 })
 
-export async function exchangeCodeForToken(
-  env: GithubEnv,
-  code: string,
-  fetchImpl: FetchImpl = fetch
-): Promise<GithubTokenResponse> {
-  return client.exchangeCodeForToken(
-    {
-      client_id: env.GITHUB_OAUTH_CLIENT_ID,
-      client_secret: env.GITHUB_OAUTH_CLIENT_SECRET,
-      redirect_uri: env.GITHUB_OAUTH_REDIRECT_URI,
-      code,
-    },
-    fetchImpl
-  )
+export async function exchangeCodeForToken(env: GithubEnv, code: string): Promise<GithubTokenResponse> {
+  return client.exchangeCodeForToken({
+    client_id: env.GITHUB_OAUTH_CLIENT_ID,
+    client_secret: env.GITHUB_OAUTH_CLIENT_SECRET,
+    redirect_uri: env.GITHUB_OAUTH_REDIRECT_URI,
+    code,
+  })
 }
 
-export async function refreshAccessToken(
-  env: GithubEnv,
-  refreshToken: string,
-  fetchImpl: FetchImpl = fetch
-): Promise<GithubTokenResponse> {
-  return client.refreshAccessToken(
-    {
-      client_id: env.GITHUB_OAUTH_CLIENT_ID,
-      client_secret: env.GITHUB_OAUTH_CLIENT_SECRET,
-      refresh_token: refreshToken,
-    },
-    fetchImpl
-  )
+export async function refreshAccessToken(env: GithubEnv, refreshToken: string): Promise<GithubTokenResponse> {
+  return client.refreshAccessToken({
+    client_id: env.GITHUB_OAUTH_CLIENT_ID,
+    client_secret: env.GITHUB_OAUTH_CLIENT_SECRET,
+    refresh_token: refreshToken,
+  })
 }
 
-export async function fetchAuthenticatedLogin(accessToken: string, fetchImpl: FetchImpl = fetch): Promise<string> {
-  const response = await fetchImpl(GITHUB_USER_URL, {
+export async function fetchAuthenticatedLogin(accessToken: string): Promise<string> {
+  const response = await fetch(GITHUB_USER_URL, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
       Accept: 'application/vnd.github+json',

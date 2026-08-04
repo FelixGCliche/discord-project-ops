@@ -1,5 +1,6 @@
-import { beforeEach, describe, expect, mock, test } from 'bun:test'
+import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
 import { createSignedState } from 'core'
+import { mockFetch } from 'core/test-utils.ts'
 import { buildLinearTokenResponse } from 'linear/oauth/oauth.fixtures.ts'
 import type { BotEnv } from '../env'
 import { createLinearOAuthHandler, LINEAR_OAUTH_STATE_PURPOSE } from './index'
@@ -30,13 +31,17 @@ function createEnv(overrides: Partial<BotEnv> = {}) {
   return { env, storeAuth, idFromName, get }
 }
 
-let tokenFetchMock: ReturnType<typeof mock<(url: string | URL, init?: RequestInit) => Promise<Response>>>
+let tokenFetchMock: ReturnType<typeof mockFetch>
 let authorizeHandler: NonNullable<ReturnType<typeof createLinearOAuthHandler>['/oauth/authorize']>
 let callbackHandler: NonNullable<ReturnType<typeof createLinearOAuthHandler>['/oauth/callback']>
 
+afterEach(() => {
+  mock.restore()
+})
+
 beforeEach(() => {
-  tokenFetchMock = mock(async () => Response.json(buildLinearTokenResponse()))
-  const handlers = createLinearOAuthHandler(tokenFetchMock)
+  tokenFetchMock = mockFetch(async () => Response.json(buildLinearTokenResponse()))
+  const handlers = createLinearOAuthHandler()
   authorizeHandler = handlers['/oauth/authorize']!
   callbackHandler = handlers['/oauth/callback']!
   linearSdkMock.organization = { name: 'Acme Inc' }
@@ -141,7 +146,7 @@ describe('/oauth/callback', () => {
 
   test('rejects and never stores auth when the token exchange fails', async () => {
     const { env, storeAuth } = createEnv()
-    tokenFetchMock.mockImplementation(async () => new Response('error', { status: 401 }))
+    mockFetch(async () => new Response('error', { status: 401 }))
     const state = await createSignedState(env.LINEAR_OAUTH_STATE_SECRET, LINEAR_OAUTH_STATE_PURPOSE)
     const request = new Request(
       `https://bot.example.com/oauth/callback?code=some-code&state=${encodeURIComponent(state)}`

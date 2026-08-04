@@ -1,6 +1,5 @@
 import { z } from 'zod'
 import { createOAuthClient } from 'core'
-import type { FetchImpl } from 'core'
 import type { LinearEnv } from '../env'
 
 const LINEAR_AUTHORIZE_URL = 'https://linear.app/oauth/authorize'
@@ -32,41 +31,25 @@ export function getAuthorizationUrl(env: LinearEnv, state: string): string {
   return `${LINEAR_AUTHORIZE_URL}?${params.toString()}`
 }
 
-export type { FetchImpl }
-
 const client = createOAuthClient<LinearTokenResponse>({
   provider: 'Linear',
   tokenUrl: LINEAR_TOKEN_URL,
   tokenResponseSchema,
 })
 
-export async function exchangeCodeForToken(
-  env: LinearEnv,
-  code: string,
-  fetchImpl: FetchImpl = fetch
-): Promise<LinearTokenResponse> {
-  return client.exchangeCodeForToken(
-    {
-      client_id: env.LINEAR_OAUTH_CLIENT_ID,
-      client_secret: env.LINEAR_OAUTH_CLIENT_SECRET,
-      redirect_uri: env.LINEAR_OAUTH_REDIRECT_URI,
-      code,
-    },
-    fetchImpl
-  )
+export async function exchangeCodeForToken(env: LinearEnv, code: string): Promise<LinearTokenResponse> {
+  return client.exchangeCodeForToken({
+    client_id: env.LINEAR_OAUTH_CLIENT_ID,
+    client_secret: env.LINEAR_OAUTH_CLIENT_SECRET,
+    redirect_uri: env.LINEAR_OAUTH_REDIRECT_URI,
+    code,
+  })
 }
 
-export async function refreshAccessToken(
-  env: LinearEnv,
-  refreshToken: string,
-  fetchImpl: FetchImpl = fetch
-): Promise<LinearTokenResponse> {
-  return client.refreshAccessToken(
-    {
-      client_id: env.LINEAR_OAUTH_CLIENT_ID,
-      client_secret: env.LINEAR_OAUTH_CLIENT_SECRET,
-      refresh_token: refreshToken,
-    },
-    fetchImpl
-  )
+export async function refreshAccessToken(env: LinearEnv, refreshToken: string): Promise<LinearTokenResponse> {
+  return client.refreshAccessToken({
+    client_id: env.LINEAR_OAUTH_CLIENT_ID,
+    client_secret: env.LINEAR_OAUTH_CLIENT_SECRET,
+    refresh_token: refreshToken,
+  })
 }

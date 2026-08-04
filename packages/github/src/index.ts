@@ -5,7 +5,6 @@ export {
   refreshAccessToken,
   fetchAuthenticatedLogin,
   type GithubTokenResponse,
-  type FetchImpl,
 } from './oauth'
 export {
   createAppJwt,

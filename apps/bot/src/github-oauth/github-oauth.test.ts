@@ -1,5 +1,6 @@
-import { beforeEach, describe, expect, mock, test } from 'bun:test'
+import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
 import { createSignedState } from 'core'
+import { mockFetch } from 'core/test-utils.ts'
 import { TEST_GITHUB_APP_PRIVATE_KEY_BASE64 } from 'github/app-auth/app-auth.fixtures.ts'
 import { buildGithubTokenResponse } from 'github/oauth/oauth.fixtures.ts'
 import type { BotEnv } from '../env'
@@ -57,13 +58,16 @@ function createEnv(overrides: Partial<BotEnv> = {}) {
   }
 }
 
-let fetchMock: ReturnType<typeof mock<(url: string | URL, init?: RequestInit) => Promise<Response>>>
 let authorizeHandler: NonNullable<ReturnType<typeof createGithubOAuthHandler>['/github/oauth/authorize']>
 let callbackHandler: NonNullable<ReturnType<typeof createGithubOAuthHandler>['/github/oauth/callback']>
 let installHandler: NonNullable<ReturnType<typeof createGithubOAuthHandler>['/github/install']>
 
+afterEach(() => {
+  mock.restore()
+})
+
 beforeEach(() => {
-  fetchMock = mock(async (input: string | URL) => {
+  mockFetch(async (input: string | URL | Request) => {
     const url = input.toString()
     if (url === GITHUB_TOKEN_URL) {
       return Response.json(buildGithubTokenResponse())
@@ -76,7 +80,7 @@ beforeEach(() => {
     }
     throw new Error(`Unexpected fetch call: ${url}`)
   })
-  const handlers = createGithubOAuthHandler(fetchMock)
+  const handlers = createGithubOAuthHandler()
   authorizeHandler = handlers['/github/oauth/authorize']!
   callbackHandler = handlers['/github/oauth/callback']!
   installHandler = handlers['/github/install']!
@@ -174,7 +178,9 @@ describe('/github/oauth/callback', () => {
 
   test('stores null expiry values when GitHub does not return expires_in / refresh_token_expires_in', async () => {
     const { env, storeAuth } = createEnv()
-    fetchMock.mockImplementation(async (input: string | URL) => {
+    // Re-installing without an intervening `mock.restore()` reuses the same spy, so clear the
+    // calls recorded by the `beforeEach` router.
+    mockFetch(async (input: string | URL | Request) => {
       const url = input.toString()
       if (url === GITHUB_TOKEN_URL) {
         return Response.json(buildGithubTokenResponse({ expires_in: undefined, refresh_token_expires_in: undefined }))
@@ -183,7 +189,7 @@ describe('/github/oauth/callback', () => {
         return Response.json({ login: 'octocat' })
       }
       throw new Error(`Unexpected fetch call: ${url}`)
-    })
+    }).mockClear()
     const state = await createSignedState(env.GITHUB_OAUTH_STATE_SECRET, GITHUB_OAUTH_STATE_PURPOSE)
     const request = new Request(
       `https://bot.example.com/github/oauth/callback?code=some-code&state=${encodeURIComponent(state)}`
@@ -197,7 +203,7 @@ describe('/github/oauth/callback', () => {
 
   test('rejects and never stores auth when the token exchange fails', async () => {
     const { env, storeAuth } = createEnv()
-    fetchMock.mockImplementation(async () => new Response('error', { status: 401 }))
+    mockFetch(async () => new Response('error', { status: 401 })).mockClear()
     const state = await createSignedState(env.GITHUB_OAUTH_STATE_SECRET, GITHUB_OAUTH_STATE_PURPOSE)
     const request = new Request(
       `https://bot.example.com/github/oauth/callback?code=some-code&state=${encodeURIComponent(state)}`

@@ -1,16 +1,10 @@
-import {
-  getAuthorizationUrl,
-  exchangeCodeForToken,
-  fetchAuthenticatedLogin,
-  listAppInstallations,
-  type FetchImpl,
-} from 'github'
+import { getAuthorizationUrl, exchangeCodeForToken, fetchAuthenticatedLogin, listAppInstallations } from 'github'
 import { type RouteHandlers } from 'cloudflare'
 import { createSignedState, parseEnv, verifySignedState } from 'core'
 import { botEnvSchema, type BotEnv } from '../env'
 import { buildInstallUrl, GITHUB_INSTALL_STATE_PURPOSE, GITHUB_OAUTH_STATE_PURPOSE } from './links'
 
-export function createGithubOAuthHandler(fetchImpl: FetchImpl = fetch): RouteHandlers<BotEnv> {
+export function createGithubOAuthHandler(): RouteHandlers<BotEnv> {
   return {
     // The token travels as a query param here so this link can be shared/clicked directly;
     // treat it like a bearer secret (it can end up in browser history or access logs). It's a
@@ -40,8 +34,8 @@ export function createGithubOAuthHandler(fetchImpl: FetchImpl = fetch): RouteHan
         return new Response('Invalid or expired state', { status: 400 })
       }
 
-      const token = await exchangeCodeForToken(env, code, fetchImpl)
-      const login = await fetchAuthenticatedLogin(token.access_token, fetchImpl)
+      const token = await exchangeCodeForToken(env, code)
+      const login = await fetchAuthenticatedLogin(token.access_token)
 
       const id = env.GITHUB_TOKEN_STORE.idFromName('github-token-store')
       const stub = env.GITHUB_TOKEN_STORE.get(id)
@@ -96,7 +90,7 @@ export function createGithubOAuthHandler(fetchImpl: FetchImpl = fetch): RouteHan
         return new Response('Missing installation_id', { status: 400 })
       }
 
-      const installations = await listAppInstallations(env, fetchImpl)
+      const installations = await listAppInstallations(env)
       const installation = installations.find((entry) => entry.id === Number(installationId))
       if (!installation) {
         return new Response('Unknown installation_id', { status: 404 })

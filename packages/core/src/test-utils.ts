@@ -1,10 +1,13 @@
 import { spyOn } from 'bun:test'
 import { prettifyError, type z } from 'zod'
 
-type FetchImpl = (input: string | URL | Request, init?: RequestInit) => Promise<Response>
+export type MockFetch = (input: string | URL | Request, init?: RequestInit) => Promise<Response>
 
-export function mockFetch(impl: FetchImpl) {
-  return spyOn(globalThis, 'fetch').mockImplementation(impl as unknown as typeof fetch)
+export function mockFetch(mockFetch: MockFetch) {
+  const stub = (...args: Parameters<typeof fetch>) => mockFetch(...args)
+  stub.preconnect = (() => {}) satisfies typeof fetch.preconnect
+
+  return spyOn(globalThis, 'fetch').mockImplementation(stub)
 }
 
 export function assertParseSuccess<T>(result: z.ZodSafeParseResult<T>): asserts result is z.ZodSafeParseSuccess<T> {

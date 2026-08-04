@@ -1,4 +1,5 @@
-import { beforeEach, describe, expect, mock, test } from 'bun:test'
+import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
+import { mockFetch } from 'core/test-utils.ts'
 import { TEST_GITHUB_APP_PRIVATE_KEY_BASE64 } from 'github/app-auth/app-auth.fixtures.ts'
 import type { BotEnv } from '../env'
 import { getInstallationAccessToken } from './index'
@@ -42,10 +43,14 @@ function createEnv(overrides: Partial<BotEnv> = {}) {
   return { env, getInstallation, getCachedInstallationToken, cacheInstallationToken, idFromName, get }
 }
 
-let fetchMock: ReturnType<typeof mock<(url: string | URL, init?: RequestInit) => Promise<Response>>>
+let fetchMock: ReturnType<typeof mockFetch>
+
+afterEach(() => {
+  mock.restore()
+})
 
 beforeEach(() => {
-  fetchMock = mock(async () =>
+  fetchMock = mockFetch(async () =>
     Response.json({ token: 'fresh-installation-token', expires_at: '2026-01-01T01:00:00.000Z' })
   )
 })
@@ -55,7 +60,7 @@ describe('getInstallationAccessToken', () => {
     const { env, getInstallation } = createEnv()
     getInstallation.mockImplementation(async () => null)
 
-    expect(getInstallationAccessToken(env, fetchMock)).rejects.toThrow('GitHub App is not installed yet')
+    expect(getInstallationAccessToken(env)).rejects.toThrow('GitHub App is not installed yet')
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
@@ -66,7 +71,7 @@ describe('getInstallationAccessToken', () => {
       expiresAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
     }))
 
-    const token = await getInstallationAccessToken(env, fetchMock)
+    const token = await getInstallationAccessToken(env)
 
     expect(token).toBe('cached-token')
     expect(fetchMock).not.toHaveBeenCalled()
@@ -76,7 +81,7 @@ describe('getInstallationAccessToken', () => {
   test('mints and caches a fresh token when there is no cached token', async () => {
     const { env, cacheInstallationToken } = createEnv()
 
-    const token = await getInstallationAccessToken(env, fetchMock)
+    const token = await getInstallationAccessToken(env)
 
     expect(token).toBe('fresh-installation-token')
     expect(fetchMock).toHaveBeenCalledTimes(1)
@@ -92,7 +97,7 @@ describe('getInstallationAccessToken', () => {
       expiresAt: new Date(Date.now() + 30 * 1000).toISOString(),
     }))
 
-    const token = await getInstallationAccessToken(env, fetchMock)
+    const token = await getInstallationAccessToken(env)
 
     expect(token).toBe('fresh-installation-token')
     expect(fetchMock).toHaveBeenCalledTimes(1)

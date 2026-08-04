@@ -1,6 +1,7 @@
 import { importSPKI, jwtVerify } from 'jose'
-import { describe, expect, test } from 'bun:test'
+import { afterEach, describe, expect, mock, test } from 'bun:test'
 import { HttpError } from 'core'
+import { mockFetch } from 'core/test-utils.ts'
 import type { GithubEnv } from '../env'
 import { TEST_GITHUB_APP_PRIVATE_KEY_BASE64, TEST_GITHUB_APP_PUBLIC_KEY_BASE64 } from './app-auth.fixtures'
 import { createAppJwt, createInstallationAccessToken, listAppInstallations } from './index'
@@ -14,6 +15,10 @@ const ENV: GithubEnv = {
   GITHUB_APP_PRIVATE_KEY_BASE64: TEST_GITHUB_APP_PRIVATE_KEY_BASE64,
   GITHUB_APP_SLUG: 'test-app-slug',
 }
+
+afterEach(() => {
+  mock.restore()
+})
 
 function decodeBase64Url(segment: string): unknown {
   const padded = segment.replace(/-/g, '+').replace(/_/g, '/')
@@ -50,15 +55,15 @@ describe('createAppJwt()', () => {
 
 describe('createInstallationAccessToken()', () => {
   test('calls the installations endpoint with a bearer JWT and returns the parsed token', async () => {
-    let capturedUrl: string | URL | undefined
+    let capturedUrl: string | URL | Request | undefined
     let capturedHeaders: Headers | undefined
-    const stubFetch = async (url: string | URL, init?: RequestInit) => {
+    mockFetch(async (url: string | URL | Request, init?: RequestInit) => {
       capturedUrl = url
       capturedHeaders = new Headers(init?.headers)
       return Response.json({ token: 'installation-token', expires_at: '2026-01-01T01:00:00Z' })
-    }
+    })
 
-    const result = await createInstallationAccessToken(ENV, '12345', stubFetch)
+    const result = await createInstallationAccessToken(ENV, '12345')
 
     expect(capturedUrl).toBe('https://api.github.com/app/installations/12345/access_tokens')
     const authHeader = capturedHeaders?.get('Authorization') ?? ''
@@ -70,17 +75,17 @@ describe('createInstallationAccessToken()', () => {
   })
 
   test('throws when the response is not ok', async () => {
-    const stubFetch = async () => new Response('error', { status: 404 })
-    await expect(createInstallationAccessToken(ENV, '12345', stubFetch)).rejects.toThrow(
+    mockFetch(async () => new Response('error', { status: 404 }))
+    await expect(createInstallationAccessToken(ENV, '12345')).rejects.toThrow(
       'GitHub installation token exchange failed: 404'
     )
   })
 
   test('throws an HttpError with status 502 when the response is not ok', async () => {
-    const stubFetch = async () => new Response('error', { status: 404 })
+    mockFetch(async () => new Response('error', { status: 404 }))
     expect.assertions(2)
     try {
-      await createInstallationAccessToken(ENV, '12345', stubFetch)
+      await createInstallationAccessToken(ENV, '12345')
     } catch (error) {
       expect(error).toBeInstanceOf(HttpError)
       expect((error as HttpError).status).toBe(502)
@@ -90,12 +95,13 @@ describe('createInstallationAccessToken()', () => {
 
 describe('listAppInstallations()', () => {
   test('returns the parsed list of installations', async () => {
-    const stubFetch = async () =>
+    mockFetch(async () =>
       Response.json([
         { id: 1, account: { login: 'octocat' } },
         { id: 2, account: { login: 'other-org' } },
       ])
-    const result = await listAppInstallations(ENV, stubFetch)
+    )
+    const result = await listAppInstallations(ENV)
     expect(result).toEqual([
       { id: 1, account: { login: 'octocat' } },
       { id: 2, account: { login: 'other-org' } },
@@ -104,12 +110,12 @@ describe('listAppInstallations()', () => {
 
   test('sends a bearer JWT and the expected headers', async () => {
     let capturedHeaders: Headers | undefined
-    const stubFetch = async (_url: string | URL, init?: RequestInit) => {
+    mockFetch(async (_url: string | URL | Request, init?: RequestInit) => {
       capturedHeaders = new Headers(init?.headers)
       return Response.json([])
-    }
+    })
 
-    await listAppInstallations(ENV, stubFetch)
+    await listAppInstallations(ENV)
 
     const authHeader = capturedHeaders?.get('Authorization') ?? ''
     expect(authHeader.startsWith('Bearer ')).toBe(true)
@@ -119,15 +125,15 @@ describe('listAppInstallations()', () => {
   })
 
   test('throws when the response is not ok', async () => {
-    const stubFetch = async () => new Response('error', { status: 401 })
-    await expect(listAppInstallations(ENV, stubFetch)).rejects.toThrow('GitHub installation list failed: 401')
+    mockFetch(async () => new Response('error', { status: 401 }))
+    await expect(listAppInstallations(ENV)).rejects.toThrow('GitHub installation list failed: 401')
   })
 
   test('throws an HttpError with status 502 when the response is not ok', async () => {
-    const stubFetch = async () => new Response('error', { status: 401 })
+    mockFetch(async () => new Response('error', { status: 401 }))
     expect.assertions(2)
     try {
-      await listAppInstallations(ENV, stubFetch)
+      await listAppInstallations(ENV)
     } catch (error) {
       expect(error).toBeInstanceOf(HttpError)
       expect((error as HttpError).status).toBe(502)

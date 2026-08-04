@@ -1,8 +1,6 @@
 import type { z } from 'zod'
 import { HttpError } from '../http-error'
 
-export type FetchImpl = (input: string | URL, init?: RequestInit) => Promise<Response>
-
 export type OAuthClientConfig<TTokenResponse> = {
   /** Human-readable provider name used in thrown error messages, e.g. "GitHub", "Linear". */
   provider: string
@@ -19,15 +17,15 @@ export type OAuthClientConfig<TTokenResponse> = {
 }
 
 export type OAuthClient<TTokenResponse> = {
-  exchangeCodeForToken(params: Record<string, string>, fetchImpl?: FetchImpl): Promise<TTokenResponse>
-  refreshAccessToken(params: Record<string, string>, fetchImpl?: FetchImpl): Promise<TTokenResponse>
+  exchangeCodeForToken(params: Record<string, string>): Promise<TTokenResponse>
+  refreshAccessToken(params: Record<string, string>): Promise<TTokenResponse>
 }
 
 export function createOAuthClient<TTokenResponse>(
   config: OAuthClientConfig<TTokenResponse>
 ): OAuthClient<TTokenResponse> {
-  async function requestToken(action: string, body: URLSearchParams, fetchImpl: FetchImpl): Promise<TTokenResponse> {
-    const response = await fetchImpl(config.tokenUrl, {
+  async function requestToken(action: string, body: URLSearchParams): Promise<TTokenResponse> {
+    const response = await fetch(config.tokenUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -53,11 +51,11 @@ export function createOAuthClient<TTokenResponse>(
   }
 
   return {
-    exchangeCodeForToken(params: Record<string, string>, fetchImpl: FetchImpl = fetch): Promise<TTokenResponse> {
-      return requestToken('exchange', new URLSearchParams({ ...params, grant_type: 'authorization_code' }), fetchImpl)
+    exchangeCodeForToken(params: Record<string, string>): Promise<TTokenResponse> {
+      return requestToken('exchange', new URLSearchParams({ ...params, grant_type: 'authorization_code' }))
     },
-    refreshAccessToken(params: Record<string, string>, fetchImpl: FetchImpl = fetch): Promise<TTokenResponse> {
-      return requestToken('refresh', new URLSearchParams({ ...params, grant_type: 'refresh_token' }), fetchImpl)
+    refreshAccessToken(params: Record<string, string>): Promise<TTokenResponse> {
+      return requestToken('refresh', new URLSearchParams({ ...params, grant_type: 'refresh_token' }))
     },
   }
 }
