@@ -13,3 +13,4 @@ export {
   type InstallationTokenResponse,
 } from './app-auth'
 export { Octokit } from '@octokit/rest'
+export { syncVaultDoc, VaultDocSyncError, type SyncVaultDocParams, type SyncedVaultDoc } from './sync-vault-doc'
