@@ -21,7 +21,7 @@ content here; it's the source of truth for structure.
 - Lint: `bun run check:lint` (fix with `bun run fix:lint`)
 - Format check: `bun run check:format` (fix with `bun run fix:format`)
 - Everything above at once: `bun run check`
-- Tests: `bun test`, never run `bun run test:pipeline`
+- Tests: `bun test` (root) or `bun run test:pipeline` (opencode pipeline test)
 - Scope a command to one package/app: `bun run --filter='<name>' <script>` or
   `bun -F <name> <script>` (package/app names come from their `package.json` `name` field)
 

@@ -1,5 +1,5 @@
-import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
-import { mockFetch } from 'core/test-utils.ts'
+import { beforeEach, describe, expect, mock, test } from 'bun:test'
+import { mockFetch, restoreMocksAfterEachTest } from 'core/test-utils.ts'
 import { TEST_GITHUB_APP_PRIVATE_KEY_BASE64 } from 'github/app-auth/app-auth.fixtures.ts'
 import type { BotEnv } from '../env'
 import { getInstallationAccessToken } from './index'
@@ -45,9 +45,7 @@ function createEnv(overrides: Partial<BotEnv> = {}) {
 
 let fetchMock: ReturnType<typeof mockFetch>
 
-afterEach(() => {
-  mock.restore()
-})
+restoreMocksAfterEachTest()
 
 beforeEach(() => {
   fetchMock = mockFetch(async () =>

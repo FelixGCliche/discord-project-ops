@@ -1,6 +1,6 @@
-import { afterEach, describe, expect, mock, test } from 'bun:test'
+import { describe, expect, test } from 'bun:test'
 import { HttpError } from 'core'
-import { mockFetch } from 'core/test-utils.ts'
+import { mockFetch, restoreMocksAfterEachTest } from 'core/test-utils.ts'
 import type { GithubEnv } from '../env'
 import { exchangeCodeForToken, fetchAuthenticatedLogin, getAuthorizationUrl, refreshAccessToken } from './index'
 import { buildGithubTokenResponse } from './oauth.fixtures'
@@ -15,9 +15,7 @@ const ENV: GithubEnv = {
   GITHUB_APP_SLUG: 'test-app-slug',
 }
 
-afterEach(() => {
-  mock.restore()
-})
+restoreMocksAfterEachTest()
 
 describe('getAuthorizationUrl()', () => {
   test('builds the GitHub authorize URL with the expected params', () => {

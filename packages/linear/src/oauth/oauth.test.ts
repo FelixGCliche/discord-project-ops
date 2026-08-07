@@ -1,5 +1,5 @@
-import { afterEach, describe, expect, mock, test } from 'bun:test'
-import { mockFetch } from 'core/test-utils.ts'
+import { describe, expect, test } from 'bun:test'
+import { mockFetch, restoreMocksAfterEachTest } from 'core/test-utils.ts'
 import type { LinearEnv } from '../env'
 import { exchangeCodeForToken, getAuthorizationUrl, refreshAccessToken } from './index'
 import { buildLinearTokenResponse } from './oauth.fixtures'
@@ -11,9 +11,7 @@ const ENV: LinearEnv = {
   LINEAR_OAUTH_STATE_SECRET: 'state-secret',
 }
 
-afterEach(() => {
-  mock.restore()
-})
+restoreMocksAfterEachTest()
 
 describe('getAuthorizationUrl()', () => {
   test('builds the Linear authorize URL with the expected params', () => {

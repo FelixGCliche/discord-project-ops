@@ -1,6 +1,6 @@
 import { generateKeyPairSync } from 'node:crypto'
 import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
-import { mockFetch } from 'core/test-utils.ts'
+import { mockFetch, restoreMocksAfterEachTest } from 'core/test-utils.ts'
 import { buildCallbackUrls, buildManifest, buildSetupUrl, convertManifestCode, handleCallback } from './index'
 
 describe('buildCallbackUrls', () => {
@@ -96,9 +96,7 @@ describe('buildManifest', () => {
 })
 
 describe('convertManifestCode', () => {
-  afterEach(() => {
-    mock.restore()
-  })
+  restoreMocksAfterEachTest()
 
   test('parses a successful response matching the schema', async () => {
     const body = {

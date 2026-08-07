@@ -1,7 +1,7 @@
 import { importSPKI, jwtVerify } from 'jose'
-import { afterEach, describe, expect, mock, test } from 'bun:test'
+import { describe, expect, test } from 'bun:test'
 import { HttpError } from 'core'
-import { mockFetch } from 'core/test-utils.ts'
+import { mockFetch, restoreMocksAfterEachTest } from 'core/test-utils.ts'
 import type { GithubEnv } from '../env'
 import { TEST_GITHUB_APP_PRIVATE_KEY_BASE64, TEST_GITHUB_APP_PUBLIC_KEY_BASE64 } from './app-auth.fixtures'
 import { createAppJwt, createInstallationAccessToken, listAppInstallations } from './index'
@@ -16,9 +16,7 @@ const ENV: GithubEnv = {
   GITHUB_APP_SLUG: 'test-app-slug',
 }
 
-afterEach(() => {
-  mock.restore()
-})
+restoreMocksAfterEachTest()
 
 function decodeBase64Url(segment: string): unknown {
   const padded = segment.replace(/-/g, '+').replace(/_/g, '/')

@@ -1,6 +1,6 @@
-import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
+import { beforeEach, describe, expect, mock, test } from 'bun:test'
 import { createSignedState } from 'core'
-import { mockFetch } from 'core/test-utils.ts'
+import { mockFetch, restoreMocksAfterEachTest } from 'core/test-utils.ts'
 import { TEST_GITHUB_APP_PRIVATE_KEY_BASE64 } from 'github/app-auth/app-auth.fixtures.ts'
 import { buildGithubTokenResponse } from 'github/oauth/oauth.fixtures.ts'
 import type { BotEnv } from '../env'
@@ -62,9 +62,7 @@ let authorizeHandler: NonNullable<ReturnType<typeof createGithubOAuthHandler>['/
 let callbackHandler: NonNullable<ReturnType<typeof createGithubOAuthHandler>['/github/oauth/callback']>
 let installHandler: NonNullable<ReturnType<typeof createGithubOAuthHandler>['/github/install']>
 
-afterEach(() => {
-  mock.restore()
-})
+restoreMocksAfterEachTest()
 
 beforeEach(() => {
   mockFetch(async (input: string | URL | Request) => {

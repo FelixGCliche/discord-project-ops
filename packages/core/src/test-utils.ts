@@ -1,4 +1,4 @@
-import { spyOn } from 'bun:test'
+import { afterEach, mock, spyOn } from 'bun:test'
 import { prettifyError, type z } from 'zod'
 
 export type MockFetch = (input: string | URL | Request, init?: RequestInit) => Promise<Response>
@@ -8,6 +8,12 @@ export function mockFetch(mockFetch: MockFetch) {
   stub.preconnect = (() => {}) satisfies typeof fetch.preconnect
 
   return spyOn(globalThis, 'fetch').mockImplementation(stub)
+}
+
+export function restoreMocksAfterEachTest(): void {
+  afterEach(() => {
+    mock.restore()
+  })
 }
 
 export function assertParseSuccess<T>(result: z.ZodSafeParseResult<T>): asserts result is z.ZodSafeParseSuccess<T> {

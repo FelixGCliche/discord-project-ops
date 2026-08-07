@@ -1,6 +1,7 @@
 import { describe, expect, mock, test } from 'bun:test'
 import { Octokit } from '@octokit/rest'
-import { getRepoFile, listRepoTree, RepoFileNotFoundError } from './index'
+import { HttpError } from 'core'
+import { getRepoFile, listRepoTree, RepoFileNotFoundError, RepoPathNotFileError } from './index'
 
 type ReposGetContent = Octokit['rest']['repos']['getContent']
 type GitGetTree = Octokit['rest']['git']['getTree']
@@ -34,26 +35,29 @@ describe('getRepoFile()', () => {
     expect(result).toEqual({ path: 'docs/readme.md', content: 'hello world', sha: 'abc123' })
   })
 
-  test('throws RepoFileNotFoundError when the path resolves to a directory', async () => {
+  test('throws RepoPathNotFileError when the path resolves to a directory', async () => {
     const client = buildClient()
     client.rest.repos.getContent = mock(async () => ({
       data: [{ type: 'file', name: 'a.md', path: 'docs/a.md', sha: 'a-sha' }],
     })) as unknown as ReposGetContent
 
     await expect(getRepoFile(client, { owner: 'acme', repo: 'widgets', path: 'docs' })).rejects.toThrow(
-      RepoFileNotFoundError
+      RepoPathNotFileError
     )
   })
 
-  test('throws RepoFileNotFoundError on an actual 404', async () => {
+  test('throws RepoFileNotFoundError (an HttpError with status 404) on an actual 404', async () => {
     const client = buildClient()
     client.rest.repos.getContent = mock(async () => {
       throw { status: 404, message: 'Not Found' }
     }) as unknown as ReposGetContent
 
-    await expect(getRepoFile(client, { owner: 'acme', repo: 'widgets', path: 'missing.md' })).rejects.toThrow(
-      RepoFileNotFoundError
+    const error = await getRepoFile(client, { owner: 'acme', repo: 'widgets', path: 'missing.md' }).catch(
+      (cause) => cause
     )
+    expect(error).toBeInstanceOf(RepoFileNotFoundError)
+    expect(error).toBeInstanceOf(HttpError)
+    expect((error as HttpError).status).toBe(404)
   })
 
   test('propagates non-404 errors unwrapped', async () => {
@@ -113,5 +117,25 @@ describe('listRepoTree()', () => {
       tree_sha: 'main',
       recursive: undefined,
     })
+  })
+
+  test('wraps a status-carrying error from getTree in an HttpError', async () => {
+    const client = buildClient()
+    client.rest.git.getTree = mock(async () => {
+      throw { status: 404, message: 'Not Found' }
+    }) as unknown as GitGetTree
+
+    const error = await listRepoTree(client, { owner: 'acme', repo: 'widgets', ref: 'main' }).catch((cause) => cause)
+    expect(error).toBeInstanceOf(HttpError)
+    expect((error as HttpError).status).toBe(404)
+  })
+
+  test('propagates an error with no status untouched', async () => {
+    const client = buildClient()
+    client.rest.git.getTree = mock(async () => {
+      throw new Error('network down')
+    }) as unknown as GitGetTree
+
+    await expect(listRepoTree(client, { owner: 'acme', repo: 'widgets', ref: 'main' })).rejects.toThrow('network down')
   })
 })

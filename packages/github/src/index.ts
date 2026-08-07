@@ -18,6 +18,7 @@ export {
   getRepoFile,
   listRepoTree,
   RepoFileNotFoundError,
+  RepoPathNotFileError,
   type RepoFile,
   type RepoTreeEntry,
 } from './read-repo-context'

@@ -1,12 +1,10 @@
-import { afterEach, describe, expect, mock, test } from 'bun:test'
+import { describe, expect, test } from 'bun:test'
 import { z } from 'zod'
 import { HttpError } from '../http-error'
-import { mockFetch } from '../test-utils'
+import { mockFetch, restoreMocksAfterEachTest } from '../test-utils'
 import { createOAuthClient } from './index'
 
-afterEach(() => {
-  mock.restore()
-})
+restoreMocksAfterEachTest()
 
 const linearTokenResponseSchema = z.object({
   access_token: z.string(),
