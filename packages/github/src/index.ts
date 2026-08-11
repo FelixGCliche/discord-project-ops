@@ -5,7 +5,6 @@ export {
   refreshAccessToken,
   fetchAuthenticatedLogin,
   type GithubTokenResponse,
-  type FetchImpl,
 } from './oauth'
 export {
   createAppJwt,
@@ -13,3 +12,13 @@ export {
   listAppInstallations,
   type InstallationTokenResponse,
 } from './app-auth'
+export { Octokit } from '@octokit/rest'
+export { syncVaultDoc, VaultDocSyncError, type SyncVaultDocParams, type SyncedVaultDoc } from './sync-vault-doc'
+export {
+  getRepoFile,
+  listRepoTree,
+  RepoFileNotFoundError,
+  RepoPathNotFileError,
+  type RepoFile,
+  type RepoTreeEntry,
+} from './read-repo-context'

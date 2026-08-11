@@ -3,8 +3,6 @@ import { z } from 'zod'
 import { HttpError } from 'core'
 import type { GithubEnv } from '../env'
 
-export type FetchImpl = (input: string | URL, init?: RequestInit) => Promise<Response>
-
 const CLOCK_SKEW_BUFFER_SECONDS = 60
 const JWT_LIFETIME_SECONDS = 10 * 60
 
@@ -34,11 +32,10 @@ export type InstallationTokenResponse = z.infer<typeof installationTokenResponse
 
 export async function createInstallationAccessToken(
   env: GithubEnv,
-  installationId: string,
-  fetchImpl: FetchImpl = fetch
+  installationId: string
 ): Promise<InstallationTokenResponse> {
   const jwt = await createAppJwt(env)
-  const response = await fetchImpl(`https://api.github.com/app/installations/${installationId}/access_tokens`, {
+  const response = await fetch(`https://api.github.com/app/installations/${installationId}/access_tokens`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${jwt}`,
@@ -57,12 +54,9 @@ const installationSchema = z.object({
   account: z.object({ login: z.string() }).passthrough(),
 })
 
-export async function listAppInstallations(
-  env: GithubEnv,
-  fetchImpl: FetchImpl = fetch
-): Promise<Array<{ id: number; account: { login: string } }>> {
+export async function listAppInstallations(env: GithubEnv): Promise<Array<{ id: number; account: { login: string } }>> {
   const jwt = await createAppJwt(env)
-  const response = await fetchImpl('https://api.github.com/app/installations', {
+  const response = await fetch('https://api.github.com/app/installations', {
     headers: {
       Authorization: `Bearer ${jwt}`,
       Accept: 'application/vnd.github+json',

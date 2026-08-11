@@ -1,9 +1,9 @@
-import { createInstallationAccessToken, type FetchImpl } from 'github'
+import { createInstallationAccessToken } from 'github'
 import type { BotEnv } from '../env'
 
 const EXPIRY_SAFETY_MARGIN_MS = 2 * 60 * 1000
 
-export async function getInstallationAccessToken(env: BotEnv, fetchImpl: FetchImpl = fetch): Promise<string> {
+export async function getInstallationAccessToken(env: BotEnv): Promise<string> {
   const installationStub = env.GITHUB_INSTALLATION_STORE.get(
     env.GITHUB_INSTALLATION_STORE.idFromName('github-installation-store')
   )
@@ -19,7 +19,7 @@ export async function getInstallationAccessToken(env: BotEnv, fetchImpl: FetchIm
     return cached.token
   }
 
-  const fresh = await createInstallationAccessToken(env, installation.installationId, fetchImpl)
+  const fresh = await createInstallationAccessToken(env, installation.installationId)
   await installationStub.cacheInstallationToken(fresh.token, fresh.expires_at)
   return fresh.token
 }

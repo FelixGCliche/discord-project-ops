@@ -12,7 +12,7 @@
     "check:format": "oxfmt --check",
     "fix:lint": "oxlint --fix",
     "fix:format": "oxfmt",
-    "test:all": "bun test && bun -F opencode test:pipeline",
+    "test:pipeline": "bun -F opencode test:pipeline",
     "secrets:push": "bun run apps/bot/src/secrets/provision.ts",
     "secrets:push:staging": "bun run apps/bot/src/secrets/provision.ts staging",
     "secrets:validate": "bun run apps/bot/src/secrets/validate.ts",

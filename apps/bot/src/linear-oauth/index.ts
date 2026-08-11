@@ -1,11 +1,11 @@
-import { LinearClient, exchangeCodeForToken, getAuthorizationUrl, type FetchImpl } from 'linear'
+import { LinearClient, exchangeCodeForToken, getAuthorizationUrl } from 'linear'
 import { type RouteHandlers } from 'cloudflare'
 import { parseEnv, verifySignedState } from 'core'
 import { botEnvSchema, type BotEnv } from '../env'
 
 export const LINEAR_OAUTH_STATE_PURPOSE = 'linear-oauth'
 
-export function createLinearOAuthHandler(fetchImpl: FetchImpl = fetch): RouteHandlers<BotEnv> {
+export function createLinearOAuthHandler(): RouteHandlers<BotEnv> {
   return {
     // The token travels as a query param here so this link can be shared/clicked directly;
     // treat it like a bearer secret (it can end up in browser history or access logs). It's a
@@ -35,7 +35,7 @@ export function createLinearOAuthHandler(fetchImpl: FetchImpl = fetch): RouteHan
         return new Response('Invalid or expired state', { status: 400 })
       }
 
-      const token = await exchangeCodeForToken(env, code, fetchImpl)
+      const token = await exchangeCodeForToken(env, code)
       const client = new LinearClient({ accessToken: token.access_token })
       const organization = await client.organization
 

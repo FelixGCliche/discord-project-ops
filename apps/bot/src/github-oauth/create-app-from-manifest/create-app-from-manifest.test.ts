@@ -1,5 +1,6 @@
 import { generateKeyPairSync } from 'node:crypto'
 import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
+import { mockFetch, restoreMocksAfterEachTest } from 'core/test-utils.ts'
 import { buildCallbackUrls, buildManifest, buildSetupUrl, convertManifestCode, handleCallback } from './index'
 
 describe('buildCallbackUrls', () => {
@@ -95,11 +96,7 @@ describe('buildManifest', () => {
 })
 
 describe('convertManifestCode', () => {
-  const originalFetch = globalThis.fetch
-
-  afterEach(() => {
-    globalThis.fetch = originalFetch
-  })
+  restoreMocksAfterEachTest()
 
   test('parses a successful response matching the schema', async () => {
     const body = {
@@ -110,7 +107,7 @@ describe('convertManifestCode', () => {
       pem: '-----BEGIN RSA PRIVATE KEY-----\nabc\n-----END RSA PRIVATE KEY-----',
       slug: 'my-app',
     }
-    globalThis.fetch = mock(async () => new Response(JSON.stringify(body), { status: 200 })) as unknown as typeof fetch
+    mockFetch(async () => new Response(JSON.stringify(body), { status: 200 }))
 
     const result = await convertManifestCode('some-code')
 
@@ -118,18 +115,18 @@ describe('convertManifestCode', () => {
   })
 
   test('throws an Error starting with "GitHub manifest conversion failed: " on a non-ok response', async () => {
-    globalThis.fetch = mock(async () => new Response('boom', { status: 500 })) as unknown as typeof fetch
+    mockFetch(async () => new Response('boom', { status: 500 }))
 
     await expect(convertManifestCode('some-code')).rejects.toThrow(/^GitHub manifest conversion failed: /)
   })
 })
 
 describe('handleCallback', () => {
-  const originalFetch = globalThis.fetch
+  // `console.log` is replaced by a bare assignment below, which `mock.restore()` does not undo.
   const originalLog = console.log
 
   afterEach(() => {
-    globalThis.fetch = originalFetch
+    mock.restore()
     console.log = originalLog
   })
 
@@ -164,7 +161,7 @@ describe('handleCallback', () => {
       pem: privateKey,
       slug: 'my-app',
     }
-    globalThis.fetch = mock(async () => new Response(JSON.stringify(body), { status: 200 })) as unknown as typeof fetch
+    mockFetch(async () => new Response(JSON.stringify(body), { status: 200 }))
 
     const logSpy = mock(() => {})
     console.log = logSpy
