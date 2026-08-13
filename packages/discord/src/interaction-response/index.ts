@@ -19,6 +19,10 @@ export function respondDefer(ephemeral?: boolean): InteractionResponse {
   return buildResponse(5, data)
 }
 
+export function respondDeferUpdate(): InteractionResponse {
+  return buildResponse(6)
+}
+
 export function respondMessage(
   content: string,
   opts?: {

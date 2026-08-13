@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { respondPong, respondDefer, respondMessage, respondUpdateMessage } from './index'
+import { respondPong, respondDefer, respondDeferUpdate, respondMessage, respondUpdateMessage } from './index'
 import { InteractionMessageFlags } from './schema'
 
 describe('interaction responses', () => {
@@ -18,6 +18,12 @@ describe('interaction responses', () => {
     const res = respondDefer(true)
     expect(res.type).toBe(5)
     expect(res.data?.flags).toBe(InteractionMessageFlags.EPHEMERAL)
+  })
+
+  test('respondDeferUpdate returns type 6', () => {
+    const res = respondDeferUpdate()
+    expect(res.type).toBe(6)
+    expect(res.data).toBeUndefined()
   })
 
   test('respondMessage returns type 4 with content', () => {
