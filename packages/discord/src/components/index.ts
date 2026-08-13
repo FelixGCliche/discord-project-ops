@@ -1,21 +1,22 @@
-import type { Button, ActionRow } from './schema'
+import { ButtonStyle } from './schema'
+import type { ActionRow, Button } from './schema'
 
-export function createButton(params: {
-  style: number
-  customId: string | null
-  label: string
-  url?: string
-  disabled?: boolean
-}): Button {
+type NonLinkButtonStyle = Exclude<Button['style'], typeof ButtonStyle.LINK>
+
+export type ButtonParams =
+  | { style: NonLinkButtonStyle; customId: string; label: string; disabled?: boolean }
+  | { style: typeof ButtonStyle.LINK; url: string; label: string; disabled?: boolean }
+
+export function createButton(params: ButtonParams): Button {
   const button: Button = {
     type: 2,
-    style: params.style as Button['style'],
+    style: params.style,
     label: params.label,
   }
-  if (params.customId !== null) {
+  if ('customId' in params) {
     button.custom_id = params.customId
   }
-  if (params.url) {
+  if ('url' in params) {
     button.url = params.url
   }
   if (params.disabled) {
@@ -31,12 +32,12 @@ export function createActionRow(...components: Button[]): ActionRow {
 export function createApproveDenyRow(approveCustomId: string, denyCustomId: string): ActionRow {
   return createActionRow(
     createButton({
-      style: 1,
+      style: ButtonStyle.PRIMARY,
       customId: approveCustomId,
       label: 'Approve',
     }),
     createButton({
-      style: 4,
+      style: ButtonStyle.DANGER,
       customId: denyCustomId,
       label: 'Deny',
     })

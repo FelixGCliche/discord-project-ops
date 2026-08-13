@@ -18,7 +18,6 @@ describe('component builders', () => {
   test('createButton builds a link button', () => {
     const btn = createButton({
       style: ButtonStyle.LINK,
-      customId: null,
       label: 'Learn More',
       url: 'https://example.com',
     })
