@@ -72,6 +72,19 @@
         "typescript": "^5",
       },
     },
+    "packages/discord": {
+      "name": "discord",
+      "dependencies": {
+        "core": "workspace:*",
+        "tweetnacl": "^1.0.3",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+      },
+      "peerDependencies": {
+        "typescript": "^5",
+      },
+    },
     "packages/github": {
       "name": "github",
       "dependencies": {
@@ -369,6 +382,8 @@
 
     "detect-libc": ["detect-libc@2.1.2", "", {}, "sha512-Btj2BOOO83o3WyH59e8MgXsxEQVcarkUOpEYrubB0urwnN10yQ364rsiByU11nZlqWYZm05i/of7io4mzihBtQ=="],
 
+    "discord": ["discord@workspace:packages/discord"],
+
     "error-stack-parser-es": ["error-stack-parser-es@1.0.5", "", {}, "sha512-5qucVt2XcuGMcEGgWI7i+yZpmpByQ8J1lHhcL7PwqCwu9FPP3VUXzT4ltHe5i2z9dePwEHcDVOAfSnHsOlCXRA=="],
 
     "esbuild": ["esbuild@0.28.1", "", { "optionalDependencies": { "@esbuild/aix-ppc64": "0.28.1", "@esbuild/android-arm": "0.28.1", "@esbuild/android-arm64": "0.28.1", "@esbuild/android-x64": "0.28.1", "@esbuild/darwin-arm64": "0.28.1", "@esbuild/darwin-x64": "0.28.1", "@esbuild/freebsd-arm64": "0.28.1", "@esbuild/freebsd-x64": "0.28.1", "@esbuild/linux-arm": "0.28.1", "@esbuild/linux-arm64": "0.28.1", "@esbuild/linux-ia32": "0.28.1", "@esbuild/linux-loong64": "0.28.1", "@esbuild/linux-mips64el": "0.28.1", "@esbuild/linux-ppc64": "0.28.1", "@esbuild/linux-riscv64": "0.28.1", "@esbuild/linux-s390x": "0.28.1", "@esbuild/linux-x64": "0.28.1", "@esbuild/netbsd-arm64": "0.28.1", "@esbuild/netbsd-x64": "0.28.1", "@esbuild/openbsd-arm64": "0.28.1", "@esbuild/openbsd-x64": "0.28.1", "@esbuild/openharmony-arm64": "0.28.1", "@esbuild/sunos-x64": "0.28.1", "@esbuild/win32-arm64": "0.28.1", "@esbuild/win32-ia32": "0.28.1", "@esbuild/win32-x64": "0.28.1" }, "bin": { "esbuild": "bin/esbuild" } }, "sha512-HrJrvZv5ayxBzPfwphOoNzkzOIIlifzk0KJrGK2c8R4+LKpMtpYLQeUdjnwjWv/LZlkH2laZk+4w78pi99D4Vw=="],
@@ -444,6 +459,8 @@
     "tinypool": ["tinypool@2.1.0", "", {}, "sha512-Pugqs6M0m7Lv1I7FtxN4aoyToKg1C4tu+/381vH35y8oENM/Ai7f7C4StcoK4/+BSw9ebcS8jRiVrORFKCALLw=="],
 
     "tslib": ["tslib@2.8.1", "", {}, "sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w=="],
+
+    "tweetnacl": ["tweetnacl@1.0.3", "", {}, "sha512-6rt+RN7aOi1nGMyC4Xa5DdYiukl2UWCbcJft7YhxReBGQD7OAM8Pbxw6YMo4r2diNEA8FEmu32YOn9rhaiE5yw=="],
 
     "typescript": ["typescript@5.9.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw=="],
 
