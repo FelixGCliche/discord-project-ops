@@ -1,6 +1,6 @@
+import { HttpError } from 'core'
+import { DISCORD_API_BASE_URL } from '../discord-api'
 import type { Message } from './schema'
-
-const BASE_URL = 'https://discord.com/api/v10'
 
 export async function fetchThreadMessages(
   channelId: string,
@@ -12,7 +12,7 @@ export async function fetchThreadMessages(
   }
 ): Promise<Message[]> {
   const f = opts?.fetch ?? globalThis.fetch
-  const url = new URL(`${BASE_URL}/channels/${channelId}/messages`)
+  const url = new URL(`${DISCORD_API_BASE_URL}/channels/${channelId}/messages`)
   url.searchParams.set('limit', String(opts?.limit ?? 50))
   if (opts?.before) {
     url.searchParams.set('before', opts.before)
@@ -26,7 +26,7 @@ export async function fetchThreadMessages(
   })
 
   if (!res.ok) {
-    throw new Error(`Failed to fetch messages: ${res.status} ${res.statusText}`)
+    throw new HttpError(res.status, `Failed to fetch messages: ${res.status} ${res.statusText}`)
   }
 
   const messages = (await res.json()) as Message[]

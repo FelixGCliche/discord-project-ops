@@ -52,7 +52,6 @@ export const createCommandSchema = z.object({
   contexts: z.array(z.union([z.literal(0), z.literal(1), z.literal(2)])).optional(),
   name_localizations: z.record(z.string(), z.string()).optional(),
   description_localizations: z.record(z.string(), z.string()).optional(),
-  handler: z.union([z.literal(1), z.literal(2)]).optional(),
 })
 
 export const commandSchema = createCommandSchema.extend({

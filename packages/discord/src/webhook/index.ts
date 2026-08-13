@@ -1,13 +1,20 @@
+import { HttpError } from 'core'
+import { DISCORD_API_BASE_URL } from '../discord-api'
 import type { CreateFollowupBody, EditFollowupBody } from './schema'
 
-const BASE_URL = 'https://discord.com/api/v10'
-
 function webhookBase(appId: string, token: string): string {
-  return `${BASE_URL}/webhooks/${appId}/${token}`
+  return `${DISCORD_API_BASE_URL}/webhooks/${appId}/${token}`
 }
 
 function messageUrl(appId: string, token: string, messageId: string): string {
   return `${webhookBase(appId, token)}/messages/${messageId}`
+}
+
+function ensureOk(res: Response, action: string): Response {
+  if (!res.ok) {
+    throw new HttpError(res.status, `Failed to ${action}: ${res.status} ${res.statusText}`)
+  }
+  return res
 }
 
 export async function sendFollowup(
@@ -17,11 +24,12 @@ export async function sendFollowup(
   opts?: { fetch?: typeof globalThis.fetch }
 ): Promise<Response> {
   const f = opts?.fetch ?? globalThis.fetch
-  return f(`${webhookBase(appId, token)}`, {
+  const res = await f(`${webhookBase(appId, token)}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   })
+  return ensureOk(res, 'send followup')
 }
 
 export async function editFollowup(
@@ -32,11 +40,12 @@ export async function editFollowup(
   opts?: { fetch?: typeof globalThis.fetch }
 ): Promise<Response> {
   const f = opts?.fetch ?? globalThis.fetch
-  return f(messageUrl(appId, token, messageId), {
+  const res = await f(messageUrl(appId, token, messageId), {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   })
+  return ensureOk(res, 'edit followup')
 }
 
 export async function deleteFollowup(
@@ -46,7 +55,8 @@ export async function deleteFollowup(
   opts?: { fetch?: typeof globalThis.fetch }
 ): Promise<Response> {
   const f = opts?.fetch ?? globalThis.fetch
-  return f(messageUrl(appId, token, messageId), { method: 'DELETE' })
+  const res = await f(messageUrl(appId, token, messageId), { method: 'DELETE' })
+  return ensureOk(res, 'delete followup')
 }
 
 export async function editOriginalResponse(
@@ -56,11 +66,12 @@ export async function editOriginalResponse(
   opts?: { fetch?: typeof globalThis.fetch }
 ): Promise<Response> {
   const f = opts?.fetch ?? globalThis.fetch
-  return f(messageUrl(appId, token, '@original'), {
+  const res = await f(messageUrl(appId, token, '@original'), {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   })
+  return ensureOk(res, 'edit original response')
 }
 
 export function getFollowupUrl(appId: string, token: string): string {

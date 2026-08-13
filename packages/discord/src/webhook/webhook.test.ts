@@ -47,4 +47,11 @@ describe('webhook', () => {
   test('getFollowupUrl returns the base webhook URL', () => {
     expect(getFollowupUrl(appId, token)).toBe(`https://discord.com/api/v10/webhooks/${appId}/${token}`)
   })
+
+  test('sendFollowup throws on non-ok response', async () => {
+    const fetchMock = mock(() => Promise.resolve({ ok: false, status: 401 } as Response))
+    await expect(sendFollowup(appId, token, { content: 'hello' }, { fetch: fetchMock as any })).rejects.toThrow(
+      'Failed to send followup: 401'
+    )
+  })
 })
